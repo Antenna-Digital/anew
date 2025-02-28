@@ -1,0 +1,55 @@
+/* Hide all slides by default in the Webflow designer */
+.wf-design-mode .home-hero_slider .swiper-slide {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Show the first slide by default if no data-show attribute is specified */
+.wf-design-mode .home-hero_slider:not([data-show]) .swiper-slide:first-child {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Show specific slides based on data-show attribute */
+.wf-design-mode .home-hero_slider[data-show="1"] .swiper-slide:nth-child(1),
+.wf-design-mode .home-hero_slider[data-show="2"] .swiper-slide:nth-child(2),
+.wf-design-mode .home-hero_slider[data-show="3"] .swiper-slide:nth-child(3),
+.wf-design-mode .home-hero_slider[data-show="4"] .swiper-slide:nth-child(4),
+.wf-design-mode .home-hero_slider[data-show="5"] .swiper-slide:nth-child(5),
+.wf-design-mode .home-hero_slider[data-show="6"] .swiper-slide:nth-child(6),
+.wf-design-mode .home-hero_slider[data-show="7"] .swiper-slide:nth-child(7),
+.wf-design-mode .home-hero_slider[data-show="8"] .swiper-slide:nth-child(8),
+.wf-design-mode .home-hero_slider[data-show="9"] .swiper-slide:nth-child(9),
+.wf-design-mode .home-hero_slider[data-show="10"] .swiper-slide:nth-child(10) {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Disable Swiper functionality in the Webflow designer */
+.wf-design-mode .swiper-wrapper {
+  transform: none !important;
+  display: block !important;
+}
+
+/* Add a helper message in the Webflow designer */
+.wf-design-mode .home-hero_slider::before {
+  content: "Add data-show='1', data-show='2', etc. to preview specific slides";
+  display: block;
+  padding: 8px;
+  background-color: #f5f5f5;
+  color: #333;
+  font-size: 12px;
+  text-align: center;
+  border: 1px dashed #ccc;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: calc(100% - 40px);
+  z-index: 1000;
+}
+
+
+/* Fix for misspelled wrapper class if it exists */
+.wf-design-mode .swipper-wrapper {
+  display: block !important;
+}
