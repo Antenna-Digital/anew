@@ -91,3 +91,19 @@
     padding-top: 0;
 }
 
+.wf-design-mode .scroll-experience-container {
+  display: block;
+  height: auto;
+}
+
+.wf-design-mode .accordion_content {
+    height: auto;
+    opacity: 1;
+    overflow: visible;
+    padding-top: var(--section-space--small);
+    padding-bottom: var(--space--md);
+  }
+
+  .wf-design-mode .sub-accordion_content {
+    display: block;
+  }
