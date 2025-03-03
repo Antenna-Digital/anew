@@ -53,3 +53,41 @@
 .wf-design-mode .swipper-wrapper {
   display: block !important;
 }
+
+.sub-accordion_content {
+  display: none;
+}
+
+.sub-accordion.active .sub-accordion_content {
+  display: block;
+}
+
+.sub-accordion_header {
+  cursor: pointer;
+}
+
+.sub-accordion.active .sub-accordion_header {
+  background-color: var(--swatch--glacier);
+}
+
+.sub-accordion .sub-accordion_icon {
+  transition: transform 0.3s ease;
+}
+
+.accordion_item.active .accordion_content {
+    height: auto;
+    opacity: 1;
+    overflow: visible;
+    padding-top: var(--section-space--small);
+    padding-bottom: var(--space--md);
+}
+
+.accordion_item .accordion_content {
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
