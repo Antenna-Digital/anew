@@ -57,6 +57,108 @@ document.addEventListener('DOMContentLoaded', function() {
   // Sub-accordion functionality
   const subAccordionLists = document.querySelectorAll('.sub-accordion_list');
   
+  // Function to update the accordion image based on active sub-accordion
+  function updateAccordionImage(subAccordion) {
+    console.log('updateAccordionImage called for:', subAccordion);
+    
+    // Get the parent accordion item
+    const accordionItem = subAccordion.closest('.accordion_item');
+    console.log('Parent accordion item:', accordionItem);
+    
+    if (!accordionItem) {
+      console.warn('No parent accordion item found');
+      return;
+    }
+    
+    // Get the sub-accordion image and the accordion image container
+    const subAccordionImage = subAccordion.querySelector('.sub-accordion_image');
+    const accordionImageContainer = accordionItem.querySelector('.accodion_image-container .g_visual_wrap');
+    
+    console.log('Sub-accordion image element:', subAccordionImage);
+    console.log('Accordion image container:', accordionImageContainer);
+    
+    if (subAccordionImage && accordionImageContainer) {
+      // Get the source image
+      const sourceImg = subAccordionImage;
+      // Get the current target image
+      const currentTargetImg = accordionImageContainer.querySelector('img.g_visual_img');
+      
+      console.log('Source image:', sourceImg);
+      console.log('Current target image:', currentTargetImg);
+      
+      if (sourceImg && currentTargetImg) {
+        // Get the src, srcset and sizes from the source image
+        const sourceSrc = sourceImg.getAttribute('src');
+        const sourceSrcset = sourceImg.getAttribute('srcset');
+        const sourceSizes = sourceImg.getAttribute('sizes');
+        const sourceAlt = sourceImg.getAttribute('alt') || '';
+        
+        console.log('Source image src:', sourceSrc);
+        
+        // Create a new image element for the fade transition
+        const newImage = document.createElement('img');
+        newImage.className = 'g_visual_img u-cover-absolute transition-image';
+        newImage.setAttribute('src', sourceSrc);
+        if (sourceSrcset) newImage.setAttribute('srcset', sourceSrcset);
+        if (sourceSizes) newImage.setAttribute('sizes', sourceSizes);
+        newImage.setAttribute('alt', sourceAlt);
+        
+        // Style for the fade transition - set initial opacity to 0
+        newImage.style.opacity = '0';
+        newImage.style.zIndex = '2'; // Place above the current image
+        
+        // Preload the image before showing it to prevent flickering
+        const preloadImage = new Image();
+        preloadImage.onload = () => {
+          // Once preloaded, add the new image to the container
+          accordionImageContainer.appendChild(newImage);
+          
+          // Force a reflow to ensure the transition works
+          void newImage.offsetWidth;
+          
+          // Add the transition property after the element is in the DOM
+          newImage.style.transition = 'opacity 0.5s ease';
+          
+          // Use requestAnimationFrame to ensure the browser has rendered the initial state
+          requestAnimationFrame(() => {
+            // Fade in the new image in the next frame
+            requestAnimationFrame(() => {
+              newImage.style.opacity = '1';
+            });
+          });
+          
+          // Update the original image attributes behind the scenes
+          currentTargetImg.setAttribute('src', sourceSrc);
+          if (sourceSrcset) currentTargetImg.setAttribute('srcset', sourceSrcset);
+          if (sourceSizes) currentTargetImg.setAttribute('sizes', sourceSizes);
+          currentTargetImg.setAttribute('alt', sourceAlt);
+          
+          // After the transition completes, remove the transition image
+          setTimeout(() => {
+            // Only remove if it's still in the DOM
+            if (newImage.parentNode) {
+              accordionImageContainer.removeChild(newImage);
+            }
+            
+            console.log('Transition complete, updated original image');
+          }, 600); // Slightly longer than the transition to ensure it's complete
+          
+          console.log('Started image transition');
+        };
+        
+        // Start preloading
+        preloadImage.src = sourceSrc;
+      } else {
+        console.warn('Could not find source or target img element');
+      }
+    } else {
+      console.warn('Missing required elements:', {
+        'subAccordionImage': subAccordionImage,
+        'accordionImageContainer': accordionImageContainer
+      });
+    }
+  }
+  
   // Open the first sub-accordion in each list by default
   subAccordionLists.forEach(list => {
     const subAccordions = list.querySelectorAll('.sub-accordion');
@@ -68,6 +170,9 @@ document.addEventListener('DOMContentLoaded', function() {
       if (firstContent) {
         firstContent.style.display = 'block';
       }
+      
+      // Update the accordion image with the first sub-accordion's image
+      updateAccordionImage(subAccordions[0]);
     }
     
     // Add click event listeners to all sub-accordion headers in this list
@@ -94,6 +199,9 @@ document.addEventListener('DOMContentLoaded', function() {
           if (content) {
             content.style.display = 'block';
           }
+          
+          // Update the accordion image with this sub-accordion's image
+          updateAccordionImage(parentAccordion);
         }
       });
     });
@@ -280,6 +388,86 @@ function imageSrcSetFix() {
   }
 
   imageSrcSetFix();
+
+  // Function to create and position the connecting line between split-CTA graphics
+  function createConnectingLine() {
+    // Check if the line already exists, remove it if it does to prevent duplicates
+    const existingLine = document.querySelector('.split-cta-connecting-line');
+    if (existingLine) {
+      existingLine.remove();
+    }
+    
+    // Get the two graphic elements
+    const leftGraphic = document.querySelector('.split-cta_graphic.left');
+    const rightGraphic = document.querySelector('.split-cta_graphic.right');
+    
+    // Only proceed if both elements exist
+    if (!leftGraphic || !rightGraphic) {
+      console.warn('Could not find one or both of the split-CTA graphics');
+      return;
+    }
+    
+    // Get the parent split-cta container
+    const splitCtaContainer = document.querySelector('.split-cta');
+    if (!splitCtaContainer) {
+      console.warn('Could not find the split-cta container');
+      return;
+    }
+    
+    // Create an SVG element for the line
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('split-cta-connecting-line');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none'; // Make sure it doesn't interfere with clicks
+    svg.style.zIndex = '1'; // Place it above other elements if needed
+    
+    // Get the positions of the graphics relative to the split-cta container
+    const leftRect = leftGraphic.getBoundingClientRect();
+    const rightRect = rightGraphic.getBoundingClientRect();
+    const containerRect = splitCtaContainer.getBoundingClientRect();
+    
+    // Calculate the center point of the split-cta container for vertical alignment
+    const containerCenterY = containerRect.height / 2;
+    
+    // Calculate the start and end points for the line
+    // Start from the middle right of the left graphic
+    const startX = leftRect.right - containerRect.left;
+    // Use the container's center for Y position
+    const startY = containerCenterY;
+    
+    // End at the middle left of the right graphic
+    const endX = rightRect.left - containerRect.left;
+    // Use the container's center for Y position
+    const endY = containerCenterY;
+    
+    // Create the line element
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', startX);
+    line.setAttribute('y1', startY);
+    line.setAttribute('x2', endX);
+    line.setAttribute('y2', endY);
+    line.setAttribute('stroke', 'white');
+    line.setAttribute('stroke-opacity', '0.75');
+    line.setAttribute('stroke-width', '2');
+    
+    // Add the line to the SVG
+    svg.appendChild(line);
+    
+    // Add the SVG to the split-cta container
+    splitCtaContainer.appendChild(svg);
+  }
+  
+  // Create the line on initial load
+  createConnectingLine();
+  
+  // Update the line position on window resize
+  window.addEventListener('resize', function() {
+    createConnectingLine();
+  });
 
 });
 
