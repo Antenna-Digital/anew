@@ -461,13 +461,20 @@ function imageSrcSetFix() {
     splitCtaContainer.appendChild(svg);
   }
   
-  // Create the line on initial load
+  // Initial creation with multiple attempts
+  // Try immediately
   createConnectingLine();
   
-  // Update the line position on window resize
-  window.addEventListener('resize', function() {
-    createConnectingLine();
-  });
+  // Try again after delays to ensure proper positioning
+  setTimeout(createConnectingLine, 500);
+  setTimeout(createConnectingLine, 1500);
+  setTimeout(createConnectingLine, 3000);
+  
+  // Also try when window fully loads
+  window.addEventListener('load', createConnectingLine);
+  
+  // Update immediately on resize without debounce for responsiveness
+  window.addEventListener('resize', createConnectingLine);
 
 });
 
