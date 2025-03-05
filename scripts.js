@@ -1,28 +1,170 @@
 // Initialize Swiper sliders for all instances of .home-hero_slider
 document.addEventListener('DOMContentLoaded', function() {
-  // Find all slider containers
+  // Swiper slider initialization
   const sliderContainers = document.querySelectorAll('.home-hero_slider');
-  
-  // Loop through each slider container
-  sliderContainers.forEach(function(container) {
-    // Initialize Swiper for this container
-    const swiper = new Swiper(container.querySelector('.swiper'), {
-      // Enable fade effect
-      effect: 'fade',
-      fadeEffect: {
-        crossFade: true
-      },
-      
-      // Show only one slide at a time
-      slidesPerView: 1,
-      
-      // Enable autoplay
-      autoplay: {
-        delay: 5000, // 5 seconds between slides
-        disableOnInteraction: false // Continue autoplay after user interaction
+  if (sliderContainers.length > 0) {
+    sliderContainers.forEach(function(container) {
+      const swiperElement = container.querySelector('.swiper');
+      if (swiperElement) {
+        const swiper = new Swiper(swiperElement, {
+          // Enable fade effect
+          effect: 'fade',
+          fadeEffect: {
+            crossFade: true
+          },
+          
+          // Show only one slide at a time
+          slidesPerView: 1,
+          
+          // Enable autoplay
+          autoplay: {
+            delay: 5000, // 5 seconds between slides
+            disableOnInteraction: false // Continue autoplay after user interaction
+          }
+        });
       }
     });
-  });
+  }
+  
+  // Team connected sliders initialization
+  function initTeamSliders() {
+    // Find all team components on the page
+    const teamComponents = document.querySelectorAll('.team');
+    
+    if (teamComponents.length === 0) return;
+    
+    teamComponents.forEach(function(teamComponent) {
+      // Find the main slider and track slider within this team component
+      // Note the updated selectors to match your HTML structure
+      const mainSliderContainer = teamComponent.querySelector('.team_slider-main');
+      const trackSliderContainer = teamComponent.querySelector('.team_slider-track');
+      
+      if (!mainSliderContainer || !trackSliderContainer) return;
+      
+      // Get the actual swiper elements
+      const mainSliderElement = mainSliderContainer.querySelector('.swiper');
+      const trackSliderElement = trackSliderContainer.querySelector('.swiper');
+      
+      if (!mainSliderElement || !trackSliderElement) return;
+      
+      // Initialize the main slider
+      const mainSwiper = new Swiper(mainSliderElement, {
+        effect: 'slide',
+        slidesPerView: 1,
+        // Remove autoplay
+        // Disable loop
+        loop: false,
+        speed: 200,
+        watchSlidesProgress: true,
+        // Disable touch/swipe controls
+        allowTouchMove: false,
+        // Remove navigation from Swiper initialization
+        // We'll handle it manually
+        on: {
+          slideChange: function() {
+            // Update the counter with correct class names
+            const currentCounter = teamComponent.querySelector('.team_current');
+            const totalCounter = teamComponent.querySelector('.team_total');
+            
+            if (currentCounter && totalCounter) {
+              currentCounter.textContent = this.activeIndex + 1;
+              totalCounter.textContent = this.slides.length;
+            }
+            
+            // Update track slider manually
+            if (trackSwiper) {
+              trackSwiper.slideTo(this.activeIndex + 1, 300);
+            }
+          }
+        }
+      });
+      
+      // Initialize the track slider
+      const trackSwiper = new Swiper(trackSliderElement, {
+        slidesPerView: 3,
+        spaceBetween: 20,
+        // Disable loop
+        loop: false,
+        speed: 200,
+        // Disable autoplay on track slider
+        autoplay: false,
+        // Enable smooth transitions between slides
+        effect: 'slide',
+        // Disable touch/swipe controls
+        allowTouchMove: false,
+        // Important: Remove slidesPerGroup to prevent grouping
+        // Start at the next slide (offset by 1)
+        initialSlide: 1,
+        // Allow sliding beyond the end
+        allowSlideNext: true,
+        // Add fixed space after the last slide
+        slidesOffsetAfter: trackSliderContainer.offsetWidth,
+        // Responsive breakpoints
+        breakpoints: {
+          0: {
+            slidesPerView: 1.5,
+            spaceBetween: 10
+          },
+          480: {
+            slidesPerView: 2,
+            spaceBetween: 15
+          },
+          768: {
+            slidesPerView: 1,
+            spaceBetween: 15
+          },
+          992: {
+            slidesPerView: 2.5,
+            spaceBetween: 20
+          }
+        }
+      });
+      
+      // Add click functionality to track slider slides
+      trackSliderElement.querySelectorAll('.swiper-slide').forEach(function(slide, index) {
+        slide.addEventListener('click', function() {
+          // Use slideTo instead of slideToLoop since loop is disabled
+          mainSwiper.slideTo(index);
+        });
+      });
+      
+      // Add custom click handlers for the navigation buttons
+      const prevButton = teamComponent.querySelector('.team_arrow.prev');
+      const nextButton = teamComponent.querySelector('.team_arrow.next');
+      
+      if (prevButton) {
+        prevButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Move main slider back one slide
+          if (mainSwiper.activeIndex > 0) {
+            mainSwiper.slideTo(mainSwiper.activeIndex - 1);
+          }
+        });
+      }
+      
+      if (nextButton) {
+        nextButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Move main slider forward one slide
+          if (mainSwiper.activeIndex < mainSwiper.slides.length - 1) {
+            mainSwiper.slideTo(mainSwiper.activeIndex + 1);
+          }
+        });
+      }
+      
+      // Initialize counter on load with correct class names
+      const currentCounter = teamComponent.querySelector('.team_current');
+      const totalCounter = teamComponent.querySelector('.team_total');
+      
+      if (currentCounter && totalCounter) {
+        currentCounter.textContent = mainSwiper.activeIndex + 1;
+        totalCounter.textContent = mainSwiper.slides.length;
+      }
+    });
+  }
+  
+  // Initialize team sliders
+  initTeamSliders();
   
   // Position the vertical line
   function positionVerticalLine() {
@@ -31,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const homeHero = document.querySelector('.home-hero');
     
     if (verticalLine && heroButtons && homeHero) {
-      
       // Get the home-hero container dimensions
       const heroRect = homeHero.getBoundingClientRect();
       const buttonsRect = heroButtons.getBoundingClientRect();
@@ -48,34 +189,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Position on load
-  positionVerticalLine();
-  
-  // Reposition on window resize
-  window.addEventListener('resize', positionVerticalLine);
+  // Only set up vertical line positioning if the elements exist
+  const verticalLine = document.querySelector('.vertical-line');
+  const heroButtons = document.querySelector('.home-hero_buttons');
+  if (verticalLine && heroButtons) {
+    // Position on load
+    positionVerticalLine();
+    
+    // Reposition on window resize
+    window.addEventListener('resize', positionVerticalLine);
+  }
 
   // Sub-accordion functionality
   const subAccordionLists = document.querySelectorAll('.sub-accordion_list');
   
   // Function to update the accordion image based on active sub-accordion
   function updateAccordionImage(subAccordion) {
-    console.log('updateAccordionImage called for:', subAccordion);
+    if (!subAccordion) return;
     
     // Get the parent accordion item
     const accordionItem = subAccordion.closest('.accordion_item');
-    console.log('Parent accordion item:', accordionItem);
-    
-    if (!accordionItem) {
-      console.warn('No parent accordion item found');
-      return;
-    }
+    if (!accordionItem) return;
     
     // Get the sub-accordion image and the accordion image container
     const subAccordionImage = subAccordion.querySelector('.sub-accordion_image');
     const accordionImageContainer = accordionItem.querySelector('.accodion_image-container .g_visual_wrap');
-    
-    console.log('Sub-accordion image element:', subAccordionImage);
-    console.log('Accordion image container:', accordionImageContainer);
     
     if (subAccordionImage && accordionImageContainer) {
       // Get the source image
@@ -83,17 +221,12 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get the current target image
       const currentTargetImg = accordionImageContainer.querySelector('img.g_visual_img');
       
-      console.log('Source image:', sourceImg);
-      console.log('Current target image:', currentTargetImg);
-      
       if (sourceImg && currentTargetImg) {
         // Get the src, srcset and sizes from the source image
         const sourceSrc = sourceImg.getAttribute('src');
         const sourceSrcset = sourceImg.getAttribute('srcset');
         const sourceSizes = sourceImg.getAttribute('sizes');
         const sourceAlt = sourceImg.getAttribute('alt') || '';
-        
-        console.log('Source image src:', sourceSrc);
         
         // Create a new image element for the fade transition
         const newImage = document.createElement('img');
@@ -139,181 +272,175 @@ document.addEventListener('DOMContentLoaded', function() {
             if (newImage.parentNode) {
               accordionImageContainer.removeChild(newImage);
             }
-            
-            console.log('Transition complete, updated original image');
           }, 600); // Slightly longer than the transition to ensure it's complete
-          
-          console.log('Started image transition');
         };
         
         // Start preloading
         preloadImage.src = sourceSrc;
-      } else {
-        console.warn('Could not find source or target img element');
       }
-    } else {
-      console.warn('Missing required elements:', {
-        'subAccordionImage': subAccordionImage,
-        'accordionImageContainer': accordionImageContainer
-      });
     }
   }
   
-  // Open the first sub-accordion in each list by default
-  subAccordionLists.forEach(list => {
-    const subAccordions = list.querySelectorAll('.sub-accordion');
-    if (subAccordions.length > 0) {
-      // Add active class to first sub-accordion
-      subAccordions[0].classList.add('active');
-      // Show its content
-      const firstContent = subAccordions[0].querySelector('.sub-accordion_content');
-      if (firstContent) {
-        firstContent.style.display = 'block';
+  // Only set up sub-accordion functionality if elements exist
+  if (subAccordionLists.length > 0) {
+    // Open the first sub-accordion in each list by default
+    subAccordionLists.forEach(list => {
+      const subAccordions = list.querySelectorAll('.sub-accordion');
+      if (subAccordions.length > 0) {
+        // Add active class to first sub-accordion
+        subAccordions[0].classList.add('active');
+        // Show its content
+        const firstContent = subAccordions[0].querySelector('.sub-accordion_content');
+        if (firstContent) {
+          firstContent.style.display = 'block';
+        }
+        
+        // Update the accordion image with the first sub-accordion's image
+        updateAccordionImage(subAccordions[0]);
       }
       
-      // Update the accordion image with the first sub-accordion's image
-      updateAccordionImage(subAccordions[0]);
-    }
-    
-    // Add click event listeners to all sub-accordion headers in this list
-    const headers = list.querySelectorAll('.sub-accordion_header');
-    headers.forEach(header => {
-      header.addEventListener('click', function() {
-        const parentAccordion = this.closest('.sub-accordion');
-        const content = parentAccordion.querySelector('.sub-accordion_content');
-        const isActive = parentAccordion.classList.contains('active');
-        
-        // Close all sub-accordions in this list
-        const allSubAccordions = list.querySelectorAll('.sub-accordion');
-        allSubAccordions.forEach(accordion => {
-          accordion.classList.remove('active');
-          const accordionContent = accordion.querySelector('.sub-accordion_content');
-          if (accordionContent) {
-            accordionContent.style.display = 'none';
+      // Add click event listeners to all sub-accordion headers in this list
+      const headers = list.querySelectorAll('.sub-accordion_header');
+      headers.forEach(header => {
+        header.addEventListener('click', function() {
+          const parentAccordion = this.closest('.sub-accordion');
+          const content = parentAccordion.querySelector('.sub-accordion_content');
+          const isActive = parentAccordion.classList.contains('active');
+          
+          // Close all sub-accordions in this list
+          const allSubAccordions = list.querySelectorAll('.sub-accordion');
+          allSubAccordions.forEach(accordion => {
+            accordion.classList.remove('active');
+            const accordionContent = accordion.querySelector('.sub-accordion_content');
+            if (accordionContent) {
+              accordionContent.style.display = 'none';
+            }
+          });
+          
+          // If the clicked accordion wasn't active, open it
+          if (!isActive) {
+            parentAccordion.classList.add('active');
+            if (content) {
+              content.style.display = 'block';
+            }
+            
+            // Update the accordion image with this sub-accordion's image
+            updateAccordionImage(parentAccordion);
           }
         });
-        
-        // If the clicked accordion wasn't active, open it
-        if (!isActive) {
-          parentAccordion.classList.add('active');
-          if (content) {
-            content.style.display = 'block';
-          }
-          
-          // Update the accordion image with this sub-accordion's image
-          updateAccordionImage(parentAccordion);
-        }
       });
     });
-  });
+  }
 
-// GSAP ScrollTrigger Pin Section
-gsap.registerPlugin(ScrollTrigger);
+  // GSAP ScrollTrigger Pin Section - only initialize if elements exist
+  const scrollExperienceContainer = document.querySelector('.scroll-experience-container');
+  const accordionItems = document.querySelectorAll('.accordion_item');
   
-const accordionItems = document.querySelectorAll('.accordion_item');
-  
-// Set first accordion item as active on page load
-if (accordionItems.length > 0) {
-  accordionItems[0].classList.add('active');
-}
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined' && scrollExperienceContainer && accordionItems.length > 0) {
+    gsap.registerPlugin(ScrollTrigger);
+    
+    // Set first accordion item as active on page load
+    accordionItems[0].classList.add('active');
 
-// Main container ScrollTrigger with improved snap functionality
-ScrollTrigger.create({
-  trigger: ".scroll-experience-container",
-  pin: true,
-  start: "top top",
-  end: () => `+=${accordionItems.length * 100}%`, // Dynamic end point based on number of items
-  pinSpacing: true,
-  snap: {
-    snapTo: (value, self) => {
-      // Create snap points at equal intervals
-      const snapPoints = [];
-      for (let i = 0; i <= accordionItems.length - 1; i++) {
-        snapPoints.push(i / (accordionItems.length - 1));
+    // Main container ScrollTrigger with improved snap functionality
+    ScrollTrigger.create({
+      trigger: ".scroll-experience-container",
+      pin: true,
+      start: "top top",
+      end: () => `+=${accordionItems.length * 100}%`, // Dynamic end point based on number of items
+      pinSpacing: true,
+      snap: {
+        snapTo: (value, self) => {
+          // Create snap points at equal intervals
+          const snapPoints = [];
+          for (let i = 0; i <= accordionItems.length - 1; i++) {
+            snapPoints.push(i / (accordionItems.length - 1));
+          }
+          
+          // Find the closest snap point
+          let closest = snapPoints.reduce((prev, curr) => {
+            return (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+          });
+          
+          return closest;
+        },
+        duration: {min: 0.2, max: 0.3},
+        delay: 0.1,
+        ease: "power1.inOut"
       }
-      
-      // Find the closest snap point
-      let closest = snapPoints.reduce((prev, curr) => {
-        return (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
-      });
-      
-      return closest;
-    },
-    duration: {min: 0.2, max: 0.3},
-    delay: 0.1,
-    ease: "power1.inOut"
-  }
-});
+    });
 
-// Create a single ScrollTrigger to handle all accordion items
-ScrollTrigger.create({
-  trigger: ".scroll-experience-container",
-  start: "top top",
-  end: () => `+=${accordionItems.length * 100}%`,
-  markers: false,
-  onUpdate: self => {
-    // Calculate which item should be active based on scroll progress
-    const progress = self.progress;
-    const itemIndex = Math.round(progress * (accordionItems.length - 1));
-    
-    // Deactivate all items
-    accordionItems.forEach(item => item.classList.remove('active'));
-    
-    // Activate the current item
-    if (accordionItems[itemIndex]) {
-      accordionItems[itemIndex].classList.add('active');
-    }
-  }
-});
+    // Create a single ScrollTrigger to handle all accordion items
+    ScrollTrigger.create({
+      trigger: ".scroll-experience-container",
+      start: "top top",
+      end: () => `+=${accordionItems.length * 100}%`,
+      markers: false,
+      onUpdate: self => {
+        // Calculate which item should be active based on scroll progress
+        const progress = self.progress;
+        const itemIndex = Math.round(progress * (accordionItems.length - 1));
+        
+        // Deactivate all items
+        accordionItems.forEach(item => item.classList.remove('active'));
+        
+        // Activate the current item
+        if (accordionItems[itemIndex]) {
+          accordionItems[itemIndex].classList.add('active');
+        }
+      }
+    });
 
-// Add click navigation for accordion buttons
-const accordionButtons = document.querySelectorAll('.accordion_button-click');
+    // Add click navigation for accordion buttons
+    const accordionButtons = document.querySelectorAll('.accordion_button-click');
 
-accordionButtons.forEach((button) => {
-  button.addEventListener('click', function() {
-    // Find the parent accordion item of this button
-    const parentAccordion = this.closest('.accordion_item');
-    
-    // Find the index of this accordion item in the collection
-    const targetIndex = Array.from(accordionItems).indexOf(parentAccordion);
-    
-    // Only proceed if we found a valid index
-    if (targetIndex !== -1) {
-      // Get the container and its ScrollTrigger instances
-      const container = document.querySelector('.scroll-experience-container');
-      
-      // Find the main ScrollTrigger instance with snap functionality
-      const mainST = ScrollTrigger.getAll().find(instance => 
-        instance.vars.trigger === container || 
-        instance.vars.trigger === ".scroll-experience-container" && 
-        instance.vars.snap
-      );
-      
-      if (mainST) {
-        // Calculate the exact progress point for this accordion
-        const exactProgress = targetIndex / (accordionItems.length - 1);
-        
-        // Use ScrollTrigger's scroll method to precisely navigate to the target position
-        mainST.scroll(mainST.start + (exactProgress * (mainST.end - mainST.start)));
-        
-        // Force the snap to happen immediately
-        ScrollTrigger.update();
-        
-        // Activate the target accordion immediately for better UX
-        accordionItems.forEach((item, i) => {
-          item.classList.toggle('active', i === targetIndex);
+    if (accordionButtons.length > 0) {
+      accordionButtons.forEach((button) => {
+        button.addEventListener('click', function() {
+          // Find the parent accordion item of this button
+          const parentAccordion = this.closest('.accordion_item');
+          
+          // Find the index of this accordion item in the collection
+          const targetIndex = Array.from(accordionItems).indexOf(parentAccordion);
+          
+          // Only proceed if we found a valid index
+          if (targetIndex !== -1) {
+            // Get the container and its ScrollTrigger instances
+            const container = document.querySelector('.scroll-experience-container');
+            
+            // Find the main ScrollTrigger instance with snap functionality
+            const mainST = ScrollTrigger.getAll().find(instance => 
+              instance.vars.trigger === container || 
+              instance.vars.trigger === ".scroll-experience-container" && 
+              instance.vars.snap
+            );
+            
+            if (mainST) {
+              // Calculate the exact progress point for this accordion
+              const exactProgress = targetIndex / (accordionItems.length - 1);
+              
+              // Use ScrollTrigger's scroll method to precisely navigate to the target position
+              mainST.scroll(mainST.start + (exactProgress * (mainST.end - mainST.start)));
+              
+              // Force the snap to happen immediately
+              ScrollTrigger.update();
+              
+              // Activate the target accordion immediately for better UX
+              accordionItems.forEach((item, i) => {
+                item.classList.toggle('active', i === targetIndex);
+              });
+            }
+          }
         });
-      } else {
-        // Fallback if ScrollTrigger instance not found
-        console.warn("ScrollTrigger instance not found");
-      }
+      });
     }
-  });
-});
+  }
 
-function imageSrcSetFix() {
+  function imageSrcSetFix() {
     // Handle improperly loaded srcset size for responsive images
     var images = document.getElementsByTagName("img");
+    
+    if (images.length === 0) return;
   
     function updateImageSizes() {
       for (var i = 0; i < images.length; i++) {
@@ -366,9 +493,6 @@ function imageSrcSetFix() {
   
       // Mark as sized to avoid redundant processing
       image.dataset.sized = "true";
-  
-      // Optional: Log for debugging
-      // console.log(`Image size set to: ${finalSizeValue}`);
     }
   
     // Debounce function to limit function calls during resize
@@ -387,31 +511,27 @@ function imageSrcSetFix() {
     window.addEventListener("resize", debounce(updateImageSizes, 200));
   }
 
-  imageSrcSetFix();
+  // Only run image fix if there are images on the page
+  if (document.getElementsByTagName("img").length > 0) {
+    imageSrcSetFix();
+  }
 
   // Function to create and position the connecting line between split-CTA graphics
   function createConnectingLine() {
+    // Get the two graphic elements
+    const leftGraphic = document.querySelector('.split-cta_graphic.left');
+    const rightGraphic = document.querySelector('.split-cta_graphic.right');
+    const splitCtaContainer = document.querySelector('.split-cta');
+    
+    // Only proceed if all required elements exist
+    if (!leftGraphic || !rightGraphic || !splitCtaContainer) {
+      return;
+    }
+    
     // Check if the line already exists, remove it if it does to prevent duplicates
     const existingLine = document.querySelector('.split-cta-connecting-line');
     if (existingLine) {
       existingLine.remove();
-    }
-    
-    // Get the two graphic elements
-    const leftGraphic = document.querySelector('.split-cta_graphic.left');
-    const rightGraphic = document.querySelector('.split-cta_graphic.right');
-    
-    // Only proceed if both elements exist
-    if (!leftGraphic || !rightGraphic) {
-      console.warn('Could not find one or both of the split-CTA graphics');
-      return;
-    }
-    
-    // Get the parent split-cta container
-    const splitCtaContainer = document.querySelector('.split-cta');
-    if (!splitCtaContainer) {
-      console.warn('Could not find the split-cta container');
-      return;
     }
     
     // Create an SVG element for the line
@@ -430,19 +550,26 @@ function imageSrcSetFix() {
     const rightRect = rightGraphic.getBoundingClientRect();
     const containerRect = splitCtaContainer.getBoundingClientRect();
     
-    // Calculate the center point of the split-cta container for vertical alignment
-    const containerCenterY = containerRect.height / 2;
+    // Check if we're on a mobile/tablet screen (991px or less)
+    const isMobile = window.innerWidth <= 991;
     
-    // Calculate the start and end points for the line
-    // Start from the middle right of the left graphic
-    const startX = leftRect.right - containerRect.left;
-    // Use the container's center for Y position
-    const startY = containerCenterY;
+    let startX, startY, endX, endY;
     
-    // End at the middle left of the right graphic
-    const endX = rightRect.left - containerRect.left;
-    // Use the container's center for Y position
-    const endY = containerCenterY;
+    if (isMobile) {
+      // For mobile: bottom middle of left graphic to top middle of right graphic
+      startX = leftRect.left + (leftRect.width / 2) - containerRect.left;
+      startY = leftRect.bottom - containerRect.top;
+      
+      endX = rightRect.left + (rightRect.width / 2) - containerRect.left;
+      endY = rightRect.top - containerRect.top;
+    } else {
+      // For desktop: middle right of left graphic to middle left of right graphic
+      startX = leftRect.right - containerRect.left;
+      startY = containerRect.height / 2; // Center of container
+      
+      endX = rightRect.left - containerRect.left;
+      endY = containerRect.height / 2; // Center of container
+    }
     
     // Create the line element
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -461,20 +588,24 @@ function imageSrcSetFix() {
     splitCtaContainer.appendChild(svg);
   }
   
-  // Initial creation with multiple attempts
-  // Try immediately
-  createConnectingLine();
-  
-  // Try again after delays to ensure proper positioning
-  setTimeout(createConnectingLine, 500);
-  setTimeout(createConnectingLine, 1500);
-  setTimeout(createConnectingLine, 3000);
-  
-  // Also try when window fully loads
-  window.addEventListener('load', createConnectingLine);
-  
-  // Update immediately on resize without debounce for responsiveness
-  window.addEventListener('resize', createConnectingLine);
-
+  // Only set up split-CTA connecting line if elements exist
+  const splitCtaElements = document.querySelector('.split-cta');
+  if (splitCtaElements) {
+    // Initial creation with multiple attempts
+    createConnectingLine();
+    
+    // Try again after delays to ensure proper positioning
+    setTimeout(createConnectingLine, 500);
+    setTimeout(createConnectingLine, 1500);
+    setTimeout(createConnectingLine, 3000);
+    
+    // Also try when window fully loads
+    window.addEventListener('load', createConnectingLine);
+    
+    // Update immediately on resize without debounce for responsiveness
+    window.addEventListener('resize', createConnectingLine);
+  }
 });
+
+
 
