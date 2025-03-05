@@ -257,3 +257,10 @@ margin: 8px 0 24px
   }
 }
 
+/* Disabled arrow styling */
+.team_arrow.disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+

@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     teamComponents.forEach(function(teamComponent) {
       // Find the main slider and track slider within this team component
-      // Note the updated selectors to match your HTML structure
       const mainSliderContainer = teamComponent.querySelector('.team_slider-main');
       const trackSliderContainer = teamComponent.querySelector('.team_slider-track');
       
@@ -46,6 +45,28 @@ document.addEventListener('DOMContentLoaded', function() {
       const trackSliderElement = trackSliderContainer.querySelector('.swiper');
       
       if (!mainSliderElement || !trackSliderElement) return;
+      
+      // Get navigation buttons first so we can reference them in the Swiper initialization
+      const prevButton = teamComponent.querySelector('.team_arrow.prev');
+      const nextButton = teamComponent.querySelector('.team_arrow.next');
+      
+      // Function to update arrow states
+      function updateArrowStates(swiper, prevBtn, nextBtn) {
+        if (!prevBtn || !nextBtn) return;
+        
+        // Check if we're at the beginning or end of the slider
+        if (swiper.isBeginning) {
+          prevBtn.classList.add('disabled');
+        } else {
+          prevBtn.classList.remove('disabled');
+        }
+        
+        if (swiper.isEnd) {
+          nextBtn.classList.add('disabled');
+        } else {
+          nextBtn.classList.remove('disabled');
+        }
+      }
       
       // Initialize the main slider
       const mainSwiper = new Swiper(mainSliderElement, {
@@ -61,7 +82,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Remove navigation from Swiper initialization
         // We'll handle it manually
         on: {
+          init: function() {
+            // Update arrow states on initialization
+            updateArrowStates(this, prevButton, nextButton);
+            
+            // Update the counter with correct class names
+            const currentCounter = teamComponent.querySelector('.team_current');
+            const totalCounter = teamComponent.querySelector('.team_total');
+            
+            if (currentCounter && totalCounter) {
+              currentCounter.textContent = this.activeIndex + 1;
+              totalCounter.textContent = this.slides.length;
+            }
+          },
           slideChange: function() {
+            // Update arrow states when slides change
+            updateArrowStates(this, prevButton, nextButton);
+            
             // Update the counter with correct class names
             const currentCounter = teamComponent.querySelector('.team_current');
             const totalCounter = teamComponent.querySelector('.team_total');
@@ -73,19 +110,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update track slider manually
             if (trackSwiper) {
-              trackSwiper.slideTo(this.activeIndex + 1, 300);
+              trackSwiper.slideTo(this.activeIndex + 1, 100);
             }
           }
         }
       });
       
-      // Initialize the track slider
+      // Initialize the track slider with faster animation speed
       const trackSwiper = new Swiper(trackSliderElement, {
         slidesPerView: 3,
         spaceBetween: 20,
         // Disable loop
         loop: false,
-        speed: 200,
+        // Faster speed for track slider to ensure it keeps up with main slider
+        speed: 100, // Reduced from 200 to 100
         // Disable autoplay on track slider
         autoplay: false,
         // Enable smooth transitions between slides
@@ -128,9 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
       
-      // Add custom click handlers for the navigation buttons
-      const prevButton = teamComponent.querySelector('.team_arrow.prev');
-      const nextButton = teamComponent.querySelector('.team_arrow.next');
+      // Initial arrow state update
+      updateArrowStates(mainSwiper, prevButton, nextButton);
       
       if (prevButton) {
         prevButton.addEventListener('click', function(e) {
@@ -150,15 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
             mainSwiper.slideTo(mainSwiper.activeIndex + 1);
           }
         });
-      }
-      
-      // Initialize counter on load with correct class names
-      const currentCounter = teamComponent.querySelector('.team_current');
-      const totalCounter = teamComponent.querySelector('.team_total');
-      
-      if (currentCounter && totalCounter) {
-        currentCounter.textContent = mainSwiper.activeIndex + 1;
-        totalCounter.textContent = mainSwiper.slides.length;
       }
     });
   }
