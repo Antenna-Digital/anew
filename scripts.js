@@ -1,3 +1,29 @@
+  // Inline Lenis initialization
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inline Lenis initialization');
+    
+    // Wait a moment to ensure Lenis is loaded
+    setTimeout(function() {
+      if (typeof window.Lenis === 'function') {
+        const lenis = new window.Lenis({
+          duration: 1.2,
+          smooth: true
+        });
+        
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        
+        requestAnimationFrame(raf);
+        console.log('Lenis initialized');
+        window.lenis = lenis;
+      } else {
+        console.error('Lenis not available for inline initialization');
+      }
+    }, 500);
+  });
+
 // Initialize Swiper sliders for all instances of .home-hero_slider
 document.addEventListener('DOMContentLoaded', function() {
   // Swiper slider initialization
@@ -633,6 +659,72 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update immediately on resize without debounce for responsiveness
     window.addEventListener('resize', createConnectingLine);
   }
+
+  // Image card text animation
+  const imageCards = document.querySelectorAll('.image-card');
+  
+  imageCards.forEach(card => {
+    const text = card.querySelector('.image-card_text');
+    const svg = card.querySelector('.image-card_headline-container svg');
+    let textHeight;
+    
+    // Store the natural height of the text
+    function measureTextHeight() {
+      // Clone the text element to measure it without affecting layout
+      const clone = text.cloneNode(true);
+      
+      // Style the clone for measurement
+      clone.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        height: auto;
+        width: ${text.offsetWidth}px;
+      `;
+      
+      // Add to DOM, measure, then remove
+      card.appendChild(clone);
+      textHeight = clone.offsetHeight;
+      card.removeChild(clone);
+    }
+    
+    // Measure initial height
+    measureTextHeight();
+    
+    // Set initial state with transition
+    text.style.height = '0';
+    text.style.overflow = 'hidden';
+    text.style.transition = 'height 0.4s ease-out';
+    
+    // Add transition to SVG for smooth rotation
+    if (svg) {
+      svg.style.transition = 'transform 0.4s ease-out';
+      svg.style.transformOrigin = 'center';
+    }
+    
+    // Update height on window resize
+    window.addEventListener('resize', () => {
+      measureTextHeight();
+      // If card is currently hovered, update height immediately
+      if (card.matches(':hover')) {
+        text.style.height = textHeight + 'px';
+      }
+    });
+    
+    // Add hover listeners
+    card.addEventListener('mouseenter', () => {
+      text.style.height = textHeight + 'px';
+      if (svg) {
+        svg.style.transform = 'rotate(180deg)';
+      }
+    });
+    
+    card.addEventListener('mouseleave', () => {
+      text.style.height = '0';
+      if (svg) {
+        svg.style.transform = 'rotate(0deg)';
+      }
+    });
+  });
 });
 
 

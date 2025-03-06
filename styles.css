@@ -214,26 +214,9 @@ margin: 8px 0 24px
 .wf-design-mode .team_slider-track .collection-item:nth-child(4) {
   display: block !important;
   opacity: 1 !important;
+  padding-left: 1rem;
   width: 33.333% !important;
 }
-
-/* Add a helper message in the Webflow designer */
-.wf-design-mode .team::before {
-  content: "Team slider: Main slider shows 1 slide, Track slider shows next 3 slides";
-  display: block;
-  padding: 8px;
-  background-color: #f5f5f5;
-  color: #333;
-  font-size: 12px;
-  text-align: center;
-  border: 1px dashed #ccc;
-  position: absolute;
-  left: 10px;
-  top: 10px;
-  width: calc(100% - 40px);
-  z-index: 1000;
-}
-
 
 /* Responsive design preview for track slider */
 @media screen and (max-width: 991px) {
@@ -264,3 +247,38 @@ margin: 8px 0 24px
   pointer-events: none;
 }
 
+/* Lenis smooth scroll styles */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+.team-card .team-content { opacity: 0; transition: opacity 0.3s ease; }
+.team-card:hover .team-content { opacity: 1; }
+
+.image-card {
+  overflow: hidden;
+}
+
+
+.image-card:hover .image-card_image {
+    transition: transform 2s ease;
+    transform: scale(1.20);
+    position: relative;
+    z-index: 1;
+}
