@@ -282,3 +282,37 @@ html.lenis {
     position: relative;
     z-index: 1;
 }
+
+.tab-nav_item .tab-nav_icon,
+.tab-nav_item .tab-nav_headline {
+  transition: color 0.3s ease;
+}
+.tab-nav_item:hover .tab-nav_icon,
+.tab-nav_item:hover .tab-nav_headline {
+  color: var(--swatch--forge-100);
+}
+
+.tab-nav_item.active .tab-nav_icon,
+.tab-nav_item.active .tab-nav_headline {
+  color: var(--swatch--forge-100);
+}
+
+.tab-nav_item::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: var(--swatch--anchor-100);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: height 0.3s ease;
+}
+
+.tab-nav_item.active::after {
+    height: 4px;
+}
+
+.wf-design-mode .tab-content_item {
+  padding: 2rem 0;
+}

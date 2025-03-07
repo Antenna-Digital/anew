@@ -725,6 +725,132 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+
+  // Tab functionality
+  function initTabContainers() {
+    const tabContainers = document.querySelectorAll('.tab-container');
+    
+    if (tabContainers.length === 0) return;
+    
+    tabContainers.forEach(container => {
+      const tabNav = container.querySelector('.tab_nav');
+      const tabContent = container.querySelector('.tab_content');
+      
+      if (!tabNav || !tabContent) return;
+      
+      const tabNavItems = tabNav.querySelectorAll('.tab-nav_item');
+      const tabContentItems = tabContent.querySelectorAll('.tab-content_item');
+      
+      // Ensure we have matching numbers of nav and content items
+      if (tabNavItems.length !== tabContentItems.length) {
+        console.warn('Tab navigation and content items count mismatch');
+        return;
+      }
+      
+      // Set initial state - first tab active, others hidden
+      tabNavItems[0].classList.add('active');
+      tabNavItems[0].setAttribute('aria-selected', 'true');
+      
+      // Hide all content items except the first one
+      tabContentItems.forEach((item, index) => {
+        // Add proper ARIA roles
+        item.setAttribute('role', 'tabpanel');
+        item.setAttribute('aria-labelledby', `tab-${container.id || 'tab'}-${index}`);
+        item.id = `tabpanel-${container.id || 'tab'}-${index}`;
+        
+        if (index !== 0) {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Add click event listeners to tab nav items
+      tabNavItems.forEach((navItem, index) => {
+        // Add proper ARIA roles
+        navItem.setAttribute('role', 'tab');
+        navItem.id = `tab-${container.id || 'tab'}-${index}`;
+        navItem.setAttribute('aria-controls', `tabpanel-${container.id || 'tab'}-${index}`);
+        navItem.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+        navItem.setAttribute('tabindex', index === 0 ? '0' : '-1');
+        
+        // Find the icon element
+        const iconElement = navItem.querySelector('.tab-nav_icon');
+        
+        // Set initial icon text based on active state
+        if (iconElement) {
+          iconElement.textContent = index === 0 ? '-' : '+';
+        }
+        
+        // Make tabs keyboard navigable
+        navItem.addEventListener('keydown', (e) => {
+          // Handle arrow keys
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            
+            const direction = e.key === 'ArrowLeft' ? -1 : 1;
+            let newIndex = index + direction;
+            
+            // Handle wrapping around
+            if (newIndex < 0) newIndex = tabNavItems.length - 1;
+            if (newIndex >= tabNavItems.length) newIndex = 0;
+            
+            // Activate the new tab
+            tabNavItems[newIndex].click();
+            tabNavItems[newIndex].focus();
+          }
+          
+          // Handle Home and End keys
+          if (e.key === 'Home') {
+            e.preventDefault();
+            tabNavItems[0].click();
+            tabNavItems[0].focus();
+          }
+          
+          if (e.key === 'End') {
+            e.preventDefault();
+            tabNavItems[tabNavItems.length - 1].click();
+            tabNavItems[tabNavItems.length - 1].focus();
+          }
+        });
+        
+        navItem.addEventListener('click', function() {
+          // Remove active class from all nav items
+          tabNavItems.forEach(item => {
+            item.classList.remove('active');
+            item.setAttribute('aria-selected', 'false');
+            item.setAttribute('tabindex', '-1');
+            
+            // Update icon text to "+" for inactive tabs
+            const itemIcon = item.querySelector('.tab-nav_icon');
+            if (itemIcon) {
+              itemIcon.textContent = '+';
+            }
+          });
+          
+          // Add active class to clicked nav item
+          this.classList.add('active');
+          this.setAttribute('aria-selected', 'true');
+          this.setAttribute('tabindex', '0');
+          
+          // Update icon text to "-" for active tab
+          const thisIcon = this.querySelector('.tab-nav_icon');
+          if (thisIcon) {
+            thisIcon.textContent = '-';
+          }
+          
+          // Hide all content items
+          tabContentItems.forEach(item => {
+            item.style.display = 'none';
+          });
+          
+          // Show the corresponding content item
+          tabContentItems[index].style.display = 'block';
+        });
+      });
+    });
+  }
+  
+  // Initialize tab containers
+  initTabContainers();
 });
 
 
