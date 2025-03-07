@@ -598,7 +598,7 @@ html.lenis {
   
   .main-menu_primary,
   .main-menu_secondary {
-    padding: 7rem 4.5rem 5rem;
+    padding: 7rem 4.5rem;
   }
   
   .main-menu_link-text {
@@ -661,7 +661,6 @@ html.lenis {
   .main-menu_back {
     padding: 12px 20px;
     font-size: 16px;
-    margin-bottom: 40px;
   }
 }
 
