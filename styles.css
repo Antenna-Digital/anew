@@ -720,3 +720,106 @@ html.lenis {
 body:not(.keyboard-nav) .main-menu *:focus {
   outline: none;
 }
+
+/* Webflow Design Mode Preview Styles - For Default Structure */
+.wf-design-mode [data-show-menu="true"] .main-menu {
+  transform: translateX(0) !important;
+  position: relative !important;
+  height: auto !important;
+  width: 100% !important;
+  overflow: visible !important;
+  z-index: 1 !important;
+  background-color: transparent !important;
+  display: block !important;
+}
+
+/* Show the menu items directly in design mode */
+.wf-design-mode [data-show-menu="true"] .main-menu_item {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  margin-bottom: 20px !important;
+  background-color: rgba(15, 26, 42, 0.9) !important;
+  padding: 15px !important;
+  border-radius: 8px !important;
+}
+
+/* Make menu links visible */
+.wf-design-mode [data-show-menu="true"] .main-menu_link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.wf-design-mode [data-show-menu="true"] .main-menu_link-text {
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+}
+
+/* Make submenu toggles visible */
+.wf-design-mode [data-show-menu="true"] .main-menu_submenu-toggle {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Show all submenus for editing */
+.wf-design-mode [data-show-menu="true"] .main-menu_submenu {
+  display: block !important;
+  margin-top: 15px !important;
+  padding: 15px !important;
+  background-color: rgba(232, 241, 245, 0.95) !important;
+  border-radius: 8px !important;
+}
+
+/* Style submenu items */
+.wf-design-mode [data-show-menu="true"] .main-menu_submenu-item {
+  margin-bottom: 15px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(15, 26, 42, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+.wf-design-mode [data-show-menu="true"] .main-menu_submenu-header {
+  display: block !important;
+  color: var(--swatch--forge-100, #0f1a2a) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  margin-bottom: 10px !important;
+}
+
+.wf-design-mode [data-show-menu="true"] .main-menu_submenu-link {
+  display: block !important;
+  color: var(--swatch--forge-100, #0f1a2a) !important;
+  opacity: 0.8 !important;
+  margin-bottom: 5px !important;
+  padding: 5px !important;
+}
+
+/* Hide close buttons in design mode */
+.wf-design-mode [data-show-menu="true"] .main-menu_close {
+  display: none !important;
+}
+
+/* Add helpful labels */
+.wf-design-mode [data-show-menu="true"] .main-menu::before {
+  content: "Menu Preview (Editor Only)" !important;
+  display: block !important;
+  text-align: center !important;
+  font-weight: bold !important;
+  padding: 10px !important;
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+  border-radius: 4px !important;
+  margin-bottom: 20px !important;
+}
+
+.wf-design-mode [data-show-menu="true"] .main-menu_submenu::before {
+  content: "Submenu Content" !important;
+  display: block !important;
+  color: var(--swatch--forge-100, #0f1a2a) !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  margin-bottom: 10px !important;
+}
