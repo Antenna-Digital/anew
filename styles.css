@@ -321,29 +321,31 @@ html.lenis {
 .main-menu {
   position: fixed;
   top: 0;
-  right: 0; /* Align to right edge */
-  width: 80%; /* Width to accommodate both panels */
+  right: 0;
+  width: 80%;
   height: 100vh;
   color: white;
   z-index: 1000;
-  transform: translateX(100%); /* Hide completely by default */
-  transition: transform 0.5s ease;
+  transform: translateX(100%);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
 .main-menu.active {
-  transform: translateX(0); /* Show fully when active */
+  transform: translateX(0);
 }
 
 /* When the menu is active, ensure the primary panel is visible and aligned to the right */
 .main-menu.active .main-menu_primary {
   position: relative;
-  left: 50%; /* Push the primary panel to the right half */
+  left: 50%;
+  transition: left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* When submenu is active, reset the primary panel position */
 .main-menu.submenu-active .main-menu_primary {
-  left: 0; /* Reset position when submenu is active */
+  left: 0;
+  transition: left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .main-menu_container {
@@ -367,7 +369,8 @@ html.lenis {
   overflow-y: auto;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+              visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .main-menu.submenu-active .main-menu_secondary {
@@ -413,7 +416,7 @@ html.lenis {
   }
 
 .main-menu_item.active .main-menu_submenu-toggle {
-  transform: rotate(90deg);
+  transform: none;
 }
 
 .main-menu_submenu {
@@ -447,6 +450,7 @@ html.lenis {
   opacity: 1;
 }
 
+/* Close button styles for primary and secondary panels */
 .main-menu_close {
   position: absolute;
   top: 30px;
@@ -454,14 +458,15 @@ html.lenis {
   width: 30px;
   height: 30px;
   cursor: pointer;
-  z-index: 1001;
-  transition: transform 0.3s ease;
+  z-index: 1010;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .main-menu_close:hover {
   transform: rotate(90deg);
 }
 
+/* Base close button styles */
 .main-menu_close::before,
 .main-menu_close::after {
   content: '';
@@ -470,15 +475,47 @@ html.lenis {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: white;
+  transition: background-color 0.3s ease;
 }
 
+/* X shape for close buttons */
 .main-menu_close::before {
   transform: rotate(45deg);
 }
 
 .main-menu_close::after {
   transform: rotate(-45deg);
+}
+
+/* Primary close button is always white */
+.main-menu_close-primary::before,
+.main-menu_close-primary::after {
+  background-color: white;
+}
+
+/* Secondary close button is dark */
+.main-menu_close-secondary::before,
+.main-menu_close-secondary::after {
+  background-color: var(--swatch--forge-100, #0f1a2a);
+}
+
+/* Hide secondary close button by default */
+.main-menu_close-secondary {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Show secondary close button when submenu is active */
+.main-menu.submenu-active .main-menu_close-secondary {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hide primary close button when submenu is active */
+.main-menu.submenu-active .main-menu_close-primary {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .main-menu_button {
@@ -547,4 +584,139 @@ html.lenis {
   .main-menu {
     width: 100%;
   }
+}
+
+/* Arrow direction styles - Fixed */
+.main-menu_submenu-toggle svg {
+  transition: transform 0.3s ease;
+}
+
+/* Default state - arrow points right (no transform needed) */
+.main-menu_submenu-toggle svg {
+  transform: rotate(0deg);
+}
+
+/* Active state - arrow points left */
+.main-menu_item.active .main-menu_submenu-toggle svg {
+  transform: rotate(180deg); /* Rotate 180 degrees clockwise */
+}
+
+/* Remove the default rotation that's causing the issue */
+.main-menu_item.active .main-menu_submenu-toggle {
+  transform: none; /* Override the 90deg rotation */
+}
+
+/* Mobile menu styles */
+@media (max-width: 768px) {
+  /* Make primary menu full width */
+  .main-menu_primary {
+    width: 100%;
+    left: 0 !important; /* Override the desktop positioning */
+  }
+  
+  /* Make secondary menu full width and position it to slide in from the right */
+  .main-menu_secondary {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    right: -100%; /* Start off-screen to the right */
+    height: 100%;
+    transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* When submenu is active, slide in the secondary menu */
+  .main-menu.submenu-active .main-menu_secondary {
+    right: 0;
+  }
+  
+  /* Hide the primary menu when submenu is active */
+  .main-menu.submenu-active .main-menu_primary {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  /* Adjust the back button to be more prominent on mobile */
+  .main-menu_back {
+    padding: 12px 20px;
+    font-size: 16px;
+    margin-bottom: 40px;
+  }
+}
+
+/* Desktop menu width adjustments - Restored */
+@media (min-width: 769px) {
+  /* Set specific widths for primary and secondary panels */
+  .main-menu {
+    width: 783px; /* Total width: 353px + 430px */
+  }
+  
+  .main-menu_primary {
+    width: 353px;
+    flex: 0 0 353px; /* Prevent flexbox from resizing */
+  }
+  
+  .main-menu_secondary {
+    width: 430px;
+    flex: 0 0 430px; /* Prevent flexbox from resizing */
+  }
+  
+  /* Reset the left position for the primary panel */
+  .main-menu.active .main-menu_primary {
+    left: auto; /* Remove the left positioning */
+    position: static; /* Reset position to static */
+  }
+  
+  /* When submenu is active, ensure both panels are visible side by side */
+  .main-menu.submenu-active {
+    transform: translateX(0); /* Show the full menu */
+  }
+  
+  /* Override the previous mobile-focused styles */
+  .main-menu.submenu-active .main-menu_primary {
+    opacity: 1;
+    visibility: visible;
+    left: auto;
+    position: static;
+  }
+  
+  /* Ensure the secondary panel appears properly */
+  .main-menu.submenu-active .main-menu_secondary {
+    position: static;
+    right: auto;
+  }
+  
+  /* Adjust the transform for the initial state to show only the primary panel */
+  .main-menu.active:not(.submenu-active) {
+    transform: translateX(430px); /* Show only the primary panel initially */
+  }
+  
+  /* Simple fix for close button position */
+  .main-menu.active:not(.submenu-active) .main-menu_close {
+    left: 300px; /* Position from the left instead of right */
+    right: auto;
+  }
+  
+  /* Reset close button position when submenu is active */
+  .main-menu.submenu-active .main-menu_close {
+    left: auto;
+    right: 30px;
+  }
+}
+
+/* Focus styles for keyboard navigation - Fixed */
+.main-menu_link-text:focus,
+.main-menu_submenu-toggle:focus,
+.main-menu_back:focus,
+.main-menu_submenu-link:focus,
+.main-menu_submenu-header:focus,
+.main-menu_close:focus,
+.main-menu_button:focus {
+  outline: 2px solid #4d90fe;
+  outline-offset: 2px;
+}
+
+/* Hide outline for mouse users but show for keyboard */
+body:not(.keyboard-nav) .main-menu *:focus {
+  outline: none;
 }

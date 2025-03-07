@@ -864,10 +864,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Restructure the menu for the slide effect
     restructureMenu();
     
-    // Create close button
-    const closeButton = document.createElement('div');
-    closeButton.className = 'main-menu_close';
-    mainMenu.appendChild(closeButton);
+    // Remove the third close button if it exists
+    const extraCloseButton = mainMenu.querySelector('.main-menu_close:not(.main-menu_close-primary):not(.main-menu_close-secondary)');
+    if (extraCloseButton) {
+      extraCloseButton.remove();
+    }
     
     // Toggle main menu
     menuButton.addEventListener('click', function() {
@@ -887,19 +888,28 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Close menu
-    closeButton.addEventListener('click', function() {
-      mainMenu.classList.remove('active');
-      resetSubmenuState();
-      document.body.style.overflow = ''; // Restore scrolling
+    // Add event listeners to both close buttons
+    document.querySelectorAll('.main-menu_close').forEach(button => {
+      button.addEventListener('click', function() {
+        mainMenu.classList.remove('active');
+        resetSubmenuState();
+        document.body.style.overflow = ''; // Restore scrolling
+      });
     });
     
-    // Toggle submenu
+    // Toggle submenu - Fixed to preserve secondary close button
     submenuToggles.forEach(toggle => {
       toggle.addEventListener('click', function() {
         const menuItem = this.closest('.main-menu_item');
         
         if (menuItem) {
+          // Reset all other active items first
+          document.querySelectorAll('.main-menu_item.active').forEach(item => {
+            if (item !== menuItem) {
+              item.classList.remove('active');
+            }
+          });
+          
           // Set active state
           menuItem.classList.add('active');
           
@@ -908,21 +918,36 @@ document.addEventListener('DOMContentLoaded', function() {
           const secondaryPanel = document.querySelector('.main-menu_secondary');
           
           if (submenu && secondaryPanel) {
-            // Clone the submenu content to the secondary panel
+            // Save the close button before clearing the secondary panel
+            const closeButton = secondaryPanel.querySelector('.main-menu_close-secondary');
+            
+            // Clear the secondary panel but keep the close button if it exists
             secondaryPanel.innerHTML = '';
-            secondaryPanel.appendChild(submenu.cloneNode(true));
-            secondaryPanel.querySelector('.main-menu_submenu').style.display = 'block';
+            
+            // Add back the close button if it existed
+            if (closeButton) {
+              secondaryPanel.appendChild(closeButton);
+            }
             
             // Add a back button
             const backButton = document.createElement('div');
             backButton.className = 'main-menu_back';
             backButton.innerHTML = '← Back';
-            secondaryPanel.insertBefore(backButton, secondaryPanel.firstChild);
+            secondaryPanel.appendChild(backButton);
+            
+            // Clone the submenu content to the secondary panel
+            secondaryPanel.appendChild(submenu.cloneNode(true));
+            secondaryPanel.querySelector('.main-menu_submenu').style.display = 'block';
             
             // Handle back button click
             backButton.addEventListener('click', function() {
               // Reset the menu to show only the primary panel
               mainMenu.classList.remove('submenu-active');
+              
+              // Reset all active states to return arrows to default position
+              document.querySelectorAll('.main-menu_item.active').forEach(item => {
+                item.classList.remove('active');
+              });
             });
             
             // Add class to show submenu
@@ -936,13 +961,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetSubmenuState() {
       mainMenu.classList.remove('submenu-active');
       
+      // Reset all active states to return arrows to default position
       const activeItems = document.querySelectorAll('.main-menu_item.active');
       activeItems.forEach(item => {
         item.classList.remove('active');
       });
     }
     
-    // Function to restructure the menu for the slide effect
+    // Function to restructure the menu for the slide effect - Updated with two close buttons
     function restructureMenu() {
       // Create container for primary and secondary panels
       const menuContainer = document.createElement('div');
@@ -958,9 +984,19 @@ document.addEventListener('DOMContentLoaded', function() {
         primaryPanel.appendChild(item);
       });
       
+      // Create primary close button
+      const primaryCloseButton = document.createElement('div');
+      primaryCloseButton.className = 'main-menu_close main-menu_close-primary';
+      primaryPanel.appendChild(primaryCloseButton);
+      
       // Create secondary panel
       const secondaryPanel = document.createElement('div');
       secondaryPanel.className = 'main-menu_secondary';
+      
+      // Create secondary close button
+      const secondaryCloseButton = document.createElement('div');
+      secondaryCloseButton.className = 'main-menu_close main-menu_close-secondary';
+      secondaryPanel.appendChild(secondaryCloseButton);
       
       // Add panels to container
       menuContainer.appendChild(primaryPanel);
@@ -968,12 +1004,285 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Add container to menu
       mainMenu.appendChild(menuContainer);
+      
+      // Add event listeners to both close buttons
+      document.querySelectorAll('.main-menu_close').forEach(button => {
+        button.addEventListener('click', function() {
+          mainMenu.classList.remove('active');
+          resetSubmenuState();
+          document.body.style.overflow = ''; // Restore scrolling
+        });
+      });
     }
+
+    // Add keyboard navigation to the menu
+    addKeyboardNavigation();
   }
   
   // Initialize menu
   initializeMenu();
 });
+
+// Add keyboard navigation to the menu
+function addKeyboardNavigation() {
+  const menuButton = document.querySelector('.main-menu_button');
+  const mainMenu = document.querySelector('.main-menu');
+  const closeButtons = document.querySelectorAll('.main-menu_close');
+  
+  // Add ARIA attributes to menu button
+  menuButton.setAttribute('aria-expanded', 'false');
+  menuButton.setAttribute('aria-controls', 'main-menu');
+  menuButton.setAttribute('aria-label', 'Menu');
+  menuButton.setAttribute('role', 'button');
+  menuButton.setAttribute('tabindex', '0');
+  
+  // Add ARIA attributes to menu
+  mainMenu.setAttribute('role', 'navigation');
+  mainMenu.setAttribute('aria-label', 'Main Menu');
+  mainMenu.id = 'main-menu';
+  
+  // Add ARIA attributes to close buttons
+  closeButtons.forEach(button => {
+    button.setAttribute('aria-label', 'Close Menu');
+    button.setAttribute('role', 'button');
+    button.setAttribute('tabindex', '0');
+    
+    // Make close button keyboard accessible
+    button.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.click();
+        
+        // Return focus to menu button when closing
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.focus();
+      }
+    });
+  });
+  
+  // Handle Escape key to close menu
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && mainMenu.classList.contains('active')) {
+      closeButtons[0].click();
+    }
+  });
+  
+  // Add keyboard navigation to menu items
+  const menuItems = mainMenu.querySelectorAll('.main-menu_item');
+  
+  menuItems.forEach((item, index) => {
+    const link = item.querySelector('.main-menu_link-text');
+    const submenuToggle = item.querySelector('.main-menu_submenu-toggle');
+    
+    if (link) {
+      // Make links keyboard accessible
+      link.setAttribute('tabindex', '0');
+      
+      // Add keyboard navigation between menu items
+      link.addEventListener('keydown', function(e) {
+        switch (e.key) {
+          case 'ArrowDown':
+          case 'ArrowRight': // Add right arrow for forward navigation (like Tab)
+            e.preventDefault();
+            // Focus next menu item or wrap to first
+            const nextItem = menuItems[index + 1] || menuItems[0];
+            nextItem.querySelector('.main-menu_link-text').focus();
+            break;
+            
+          case 'ArrowUp':
+          case 'ArrowLeft': // Add left arrow for backward navigation (like Shift+Tab)
+            e.preventDefault();
+            // Focus previous menu item or wrap to last
+            const prevItem = menuItems[index - 1] || menuItems[menuItems.length - 1];
+            prevItem.querySelector('.main-menu_link-text').focus();
+            break;
+            
+          case 'Enter':
+          case ' ':
+            e.preventDefault();
+            // If there's a submenu toggle, activate it
+            if (submenuToggle) {
+              submenuToggle.click();
+              
+              // Focus the back button in the submenu
+              setTimeout(() => {
+                const backButton = document.querySelector('.main-menu_back');
+                if (backButton) backButton.focus();
+              }, 100);
+            } else {
+              // If it's just a link with no submenu, follow the link
+              link.click();
+            }
+            break;
+            
+          case 'Escape':
+            e.preventDefault();
+            // Close the menu
+            closeButtons[0].click();
+            break;
+        }
+      });
+    }
+    
+    // Update submenu toggle keyboard handling
+    if (submenuToggle) {
+      // Make submenu toggles keyboard accessible
+      submenuToggle.setAttribute('tabindex', '0');
+      submenuToggle.setAttribute('role', 'button');
+      submenuToggle.setAttribute('aria-expanded', 'false');
+      submenuToggle.setAttribute('aria-label', 'Open submenu');
+      
+      // Handle keyboard activation of submenu toggles
+      submenuToggle.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.click();
+          this.setAttribute('aria-expanded', 'true');
+          
+          // Focus the back button in the submenu
+          setTimeout(() => {
+            const backButton = document.querySelector('.main-menu_back');
+            if (backButton) backButton.focus();
+          }, 100);
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          // Forward navigation
+          e.preventDefault();
+          const nextItem = menuItems[index + 1] || menuItems[0];
+          if (nextItem) {
+            const nextLink = nextItem.querySelector('.main-menu_link-text');
+            if (nextLink) nextLink.focus();
+          }
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          // Backward navigation
+          e.preventDefault();
+          const prevItem = menuItems[index - 1] || menuItems[menuItems.length - 1];
+          if (prevItem) {
+            const prevLink = prevItem.querySelector('.main-menu_link-text');
+            if (prevLink) prevLink.focus();
+          }
+        }
+      });
+    }
+  });
+  
+  // Handle back button keyboard navigation - Fixed
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.main-menu_back')) {
+      const activeItem = document.querySelector('.main-menu_item.active');
+      if (activeItem) {
+        const submenuToggle = activeItem.querySelector('.main-menu_submenu-toggle');
+        const menuLink = activeItem.querySelector('.main-menu_link-text');
+        
+        if (submenuToggle) {
+          submenuToggle.setAttribute('aria-expanded', 'false');
+          
+          // Return focus to the menu link that was activated
+          setTimeout(() => {
+            if (menuLink) {
+              menuLink.focus();
+            } else if (submenuToggle) {
+              submenuToggle.focus();
+            }
+          }, 100);
+        }
+      }
+    }
+  });
+  
+  // Make submenu links keyboard navigable - Enhanced with left/right arrow navigation
+  function setupSubmenuKeyboardNav() {
+    const secondaryPanel = document.querySelector('.main-menu_secondary');
+    if (!secondaryPanel) return;
+    
+    const backButton = secondaryPanel.querySelector('.main-menu_back');
+    const submenuLinks = secondaryPanel.querySelectorAll('a');
+    
+    if (backButton) {
+      backButton.setAttribute('tabindex', '0');
+      backButton.setAttribute('role', 'button');
+      
+      backButton.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.click();
+          // Focus will be handled by the click event handler
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          if (submenuLinks.length > 0) {
+            submenuLinks[0].focus();
+          }
+        }
+      });
+    }
+    
+    submenuLinks.forEach((link, i) => {
+      link.addEventListener('keydown', function(e) {
+        switch (e.key) {
+          case 'ArrowDown':
+          case 'ArrowRight': // Add right arrow for forward navigation
+            e.preventDefault();
+            // Focus next link or wrap to first
+            if (i < submenuLinks.length - 1) {
+              submenuLinks[i + 1].focus();
+            } else {
+              backButton.focus();
+            }
+            break;
+            
+          case 'ArrowUp':
+          case 'ArrowLeft': // Add left arrow for backward navigation
+            e.preventDefault();
+            // Focus previous link or wrap to back button
+            if (i > 0) {
+              submenuLinks[i - 1].focus();
+            } else {
+              backButton.focus();
+            }
+            break;
+            
+          case 'Escape':
+            e.preventDefault();
+            // Close the menu
+            closeButtons[0].click();
+            break;
+        }
+      });
+    });
+  }
+  
+  // Set up submenu keyboard navigation when a submenu is opened
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.attributeName === 'class' && 
+          mainMenu.classList.contains('submenu-active')) {
+        setupSubmenuKeyboardNav();
+      }
+    });
+  });
+  
+  observer.observe(mainMenu, { attributes: true });
+}
+
+// Detect keyboard navigation vs mouse - Fixed
+function detectKeyboardNavigation() {
+  // Add class to body when using keyboard
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      document.body.classList.add('keyboard-nav');
+    }
+  });
+  
+  // Remove class when using mouse
+  document.addEventListener('mousedown', function() {
+    document.body.classList.remove('keyboard-nav');
+  });
+  
+  // Initial setup - force keyboard navigation to be active
+  document.body.classList.add('keyboard-nav');
+}
+
+// Call this function on page load
+detectKeyboardNavigation();
 
 
 
