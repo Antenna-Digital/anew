@@ -851,6 +851,128 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize tab containers
   initTabContainers();
+
+  // Menu functionality
+  function initializeMenu() {
+    const menuButton = document.querySelector('.main-menu_button');
+    const mainMenu = document.querySelector('.main-menu');
+    const submenuToggles = document.querySelectorAll('.main-menu_submenu-toggle');
+    
+    // Check if menu elements exist
+    if (!menuButton || !mainMenu) return;
+    
+    // Restructure the menu for the slide effect
+    restructureMenu();
+    
+    // Create close button
+    const closeButton = document.createElement('div');
+    closeButton.className = 'main-menu_close';
+    mainMenu.appendChild(closeButton);
+    
+    // Toggle main menu
+    menuButton.addEventListener('click', function() {
+      // Toggle the active class to show/hide the menu
+      mainMenu.classList.toggle('active');
+      
+      // If the menu is being closed, also reset any submenu state
+      if (!mainMenu.classList.contains('active')) {
+        resetSubmenuState();
+      }
+      
+      // Toggle body scroll
+      if (mainMenu.classList.contains('active')) {
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+      } else {
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+    });
+    
+    // Close menu
+    closeButton.addEventListener('click', function() {
+      mainMenu.classList.remove('active');
+      resetSubmenuState();
+      document.body.style.overflow = ''; // Restore scrolling
+    });
+    
+    // Toggle submenu
+    submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', function() {
+        const menuItem = this.closest('.main-menu_item');
+        
+        if (menuItem) {
+          // Set active state
+          menuItem.classList.add('active');
+          
+          // Show the corresponding submenu in the secondary panel
+          const submenu = menuItem.querySelector('.main-menu_submenu');
+          const secondaryPanel = document.querySelector('.main-menu_secondary');
+          
+          if (submenu && secondaryPanel) {
+            // Clone the submenu content to the secondary panel
+            secondaryPanel.innerHTML = '';
+            secondaryPanel.appendChild(submenu.cloneNode(true));
+            secondaryPanel.querySelector('.main-menu_submenu').style.display = 'block';
+            
+            // Add a back button
+            const backButton = document.createElement('div');
+            backButton.className = 'main-menu_back';
+            backButton.innerHTML = '← Back';
+            secondaryPanel.insertBefore(backButton, secondaryPanel.firstChild);
+            
+            // Handle back button click
+            backButton.addEventListener('click', function() {
+              // Reset the menu to show only the primary panel
+              mainMenu.classList.remove('submenu-active');
+            });
+            
+            // Add class to show submenu
+            mainMenu.classList.add('submenu-active');
+          }
+        }
+      });
+    });
+    
+    // Function to reset submenu state
+    function resetSubmenuState() {
+      mainMenu.classList.remove('submenu-active');
+      
+      const activeItems = document.querySelectorAll('.main-menu_item.active');
+      activeItems.forEach(item => {
+        item.classList.remove('active');
+      });
+    }
+    
+    // Function to restructure the menu for the slide effect
+    function restructureMenu() {
+      // Create container for primary and secondary panels
+      const menuContainer = document.createElement('div');
+      menuContainer.className = 'main-menu_container';
+      
+      // Create primary panel
+      const primaryPanel = document.createElement('div');
+      primaryPanel.className = 'main-menu_primary';
+      
+      // Move all menu items to the primary panel
+      const menuItems = Array.from(mainMenu.querySelectorAll('.main-menu_item'));
+      menuItems.forEach(item => {
+        primaryPanel.appendChild(item);
+      });
+      
+      // Create secondary panel
+      const secondaryPanel = document.createElement('div');
+      secondaryPanel.className = 'main-menu_secondary';
+      
+      // Add panels to container
+      menuContainer.appendChild(primaryPanel);
+      menuContainer.appendChild(secondaryPanel);
+      
+      // Add container to menu
+      mainMenu.appendChild(menuContainer);
+    }
+  }
+  
+  // Initialize menu
+  initializeMenu();
 });
 
 
