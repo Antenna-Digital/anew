@@ -903,6 +903,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const menuItem = this.closest('.main-menu_item');
         
         if (menuItem) {
+          // Check if this item is already active
+          const isActive = menuItem.classList.contains('active');
+          
           // Reset all other active items first
           document.querySelectorAll('.main-menu_item.active').forEach(item => {
             if (item !== menuItem) {
@@ -910,48 +913,76 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           });
           
-          // Set active state
-          menuItem.classList.add('active');
-          
-          // Show the corresponding submenu in the secondary panel
-          const submenu = menuItem.querySelector('.main-menu_submenu');
-          const secondaryPanel = document.querySelector('.main-menu_secondary');
-          
-          if (submenu && secondaryPanel) {
-            // Save the close button before clearing the secondary panel
-            const closeButton = secondaryPanel.querySelector('.main-menu_close-secondary');
+          // Toggle active state instead of always adding it
+          if (isActive) {
+            menuItem.classList.remove('active');
+            mainMenu.classList.remove('submenu-active');
+          } else {
+            menuItem.classList.add('active');
             
-            // Clear the secondary panel but keep the close button if it exists
-            secondaryPanel.innerHTML = '';
+            // Show the corresponding submenu in the secondary panel
+            const submenu = menuItem.querySelector('.main-menu_submenu');
+            const secondaryPanel = document.querySelector('.main-menu_secondary');
             
-            // Add back the close button if it existed
-            if (closeButton) {
-              secondaryPanel.appendChild(closeButton);
-            }
-            
-            // Add a back button
-            const backButton = document.createElement('div');
-            backButton.className = 'main-menu_back';
-            backButton.innerHTML = '← Back';
-            secondaryPanel.appendChild(backButton);
-            
-            // Clone the submenu content to the secondary panel
-            secondaryPanel.appendChild(submenu.cloneNode(true));
-            secondaryPanel.querySelector('.main-menu_submenu').style.display = 'block';
-            
-            // Handle back button click
-            backButton.addEventListener('click', function() {
-              // Reset the menu to show only the primary panel
-              mainMenu.classList.remove('submenu-active');
+            if (submenu && secondaryPanel) {
+              // Clear the secondary panel completely
+              secondaryPanel.innerHTML = '';
               
-              // Reset all active states to return arrows to default position
-              document.querySelectorAll('.main-menu_item.active').forEach(item => {
-                item.classList.remove('active');
+              // Create a header container for the back button and close button
+              const headerContainer = document.createElement('div');
+              headerContainer.style.display = 'flex';
+              headerContainer.style.justifyContent = 'space-between';
+              headerContainer.style.alignItems = 'center';
+              headerContainer.style.width = 'calc(100% - 9rem)'; // Account for padding on both sides
+              headerContainer.style.position = 'absolute';
+              headerContainer.style.top = '30px';
+              headerContainer.style.left = '4.5rem';
+              headerContainer.style.zIndex = '1010';
+              
+              // Add a back button
+              const backButton = document.createElement('div');
+              backButton.className = 'main-menu_back';
+              backButton.innerHTML = '← Back';
+              headerContainer.appendChild(backButton);
+              
+              // Add a close button
+              const closeButton = document.createElement('div');
+              closeButton.className = 'main-menu_close main-menu_close-secondary';
+              headerContainer.appendChild(closeButton);
+              
+              // Add the header container to the secondary panel
+              secondaryPanel.appendChild(headerContainer);
+              
+              // Add the submenu content with margin-top
+              const submenuContainer = document.createElement('div');
+              secondaryPanel.appendChild(submenuContainer);
+              
+              // Clone the submenu content to the submenu container
+              submenuContainer.appendChild(submenu.cloneNode(true));
+              const clonedSubmenu = submenuContainer.querySelector('.main-menu_submenu');
+              clonedSubmenu.style.display = 'flex'; // Set display to flex
+              
+              // Handle back button click
+              backButton.addEventListener('click', function() {
+                // Reset the menu to show only the primary panel
+                mainMenu.classList.remove('submenu-active');
+                
+                // Reset all active states to return arrows to default position
+                document.querySelectorAll('.main-menu_item.active').forEach(item => {
+                  item.classList.remove('active');
+                });
               });
-            });
-            
-            // Add class to show submenu
-            mainMenu.classList.add('submenu-active');
+              
+              // Handle close button click
+              closeButton.addEventListener('click', function() {
+                mainMenu.classList.remove('active');
+                resetSubmenuState();
+                document.body.style.overflow = ''; // Restore scrolling
+              });
+              
+              // Add class to show submenu
+              mainMenu.classList.add('submenu-active');
+            }
           }
         }
       });
@@ -983,6 +1014,44 @@ document.addEventListener('DOMContentLoaded', function() {
       menuItems.forEach(item => {
         primaryPanel.appendChild(item);
       });
+      
+      // Add action links to the primary panel
+      const actionLinks = mainMenu.querySelector('.main-menu_action-links');
+      if (actionLinks) {
+        primaryPanel.appendChild(actionLinks);
+      } else {
+        // Create action links if they don't exist
+        const actionLinksHTML = `
+          <div class="main-menu_action-links">
+            <div>
+              <a href="#" class="main-menu_action-link w-inline-block">
+                <div>Secondary Action</div>
+                <div class="icon w-embed">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.5875 6.4125L4.5 12.5L3.5 11.5L9.5875 5.4125L3.9875 5.4125L4 4H12V12L10.5875 12.0125L10.5875 6.4125Z" fill="#F4F3F1"></path>
+                  </svg>
+                </div>
+              </a>
+              <div class="main-menu_action-button">
+                <div data-wf--button-main--variant="base" class="btn_main_wrap">
+                  <div class="g_clickable_wrap">
+                    <a target="" href="#" class="g_clickable_link w-inline-block">
+                      <span class="g_clickable_text u-sr-only">Button Text</span>
+                    </a>
+                    <button type="button" class="g_clickable_btn">
+                      <span class="g_clickable_text u-sr-only">Button Text</span>
+                    </button>
+                  </div>
+                  <div aria-hidden="true" class="btn_main_text">Button Text</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        const actionLinksElement = document.createElement('div');
+        actionLinksElement.innerHTML = actionLinksHTML;
+        primaryPanel.appendChild(actionLinksElement.firstChild);
+      }
       
       // Create primary close button
       const primaryCloseButton = document.createElement('div');
@@ -1017,6 +1086,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add keyboard navigation to the menu
     addKeyboardNavigation();
+
+    // Fix arrow orientation
+    fixSubmenuArrows();
   }
   
   // Initialize menu
@@ -1283,6 +1355,24 @@ function detectKeyboardNavigation() {
 
 // Call this function on page load
 detectKeyboardNavigation();
+
+// Add this function to check and fix SVG orientation
+function fixSubmenuArrows() {
+  const submenuToggles = document.querySelectorAll('.main-menu_submenu-toggle');
+  
+  submenuToggles.forEach(toggle => {
+    const svg = toggle.querySelector('svg');
+    if (svg) {
+      // Reset any inline transforms that might be causing issues
+      svg.style.transform = '';
+      
+      // Check if we need to add a specific class to fix orientation
+      if (!svg.classList.contains('arrow-fixed')) {
+        svg.classList.add('arrow-fixed');
+      }
+    }
+  });
+}
 
 
 

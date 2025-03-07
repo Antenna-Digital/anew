@@ -356,16 +356,18 @@ html.lenis {
 
 .main-menu_primary {
   width: 50%;
-  padding: 120px 40px 40px;
   overflow-y: auto;
   background-color: #0f1a2a;
+}
+.main-menu_primary,
+.main-menu_secondary {
+  padding: 7rem 4.5rem 2.5rem;
 }
 
 .main-menu_secondary {
   width: 50%;
   background-color: var(--swatch--parchment-100, #e8f1f5);
   color: var(--swatch--forge-100, #0f1a2a);
-  padding: 120px 40px 40px;
   overflow-y: auto;
   opacity: 0;
   visibility: hidden;
@@ -378,27 +380,32 @@ html.lenis {
   visibility: visible;
 }
 
-.main-menu_item {
-  margin-bottom: 20px;
-  position: relative;
+.main-menu_link-text {
+    padding: 2.5rem 0;
+    position: relative;
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .main-menu_link {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
   cursor: pointer;
 }
 
 .main-menu_link-text {
-  font-size: 24px;
+  font-size: 1.25rem;
   font-weight: 500;
   color: white;
   text-decoration: none;
   background-color: transparent;
 }
 
+.main-menu_link { position: relative;}
+
+/* Position the submenu toggle correctly */
 .main-menu_submenu-toggle {
   width: 48px;
   height: 48px;
@@ -406,25 +413,47 @@ html.lenis {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease; /* Only transition the background */
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%); /* This centers it vertically */
 }
 
-.main-menu_submenu-toggle:hover  {
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px;
-  }
+.main-menu_submenu-toggle:hover {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+}
 
-.main-menu_item.active .main-menu_submenu-toggle {
-  transform: none;
+/* Handle the SVG rotation separately */
+.main-menu_submenu-toggle svg {
+  transition: transform 0.3s ease;
+  transform: rotate(0deg); /* Default state - arrow points right */
+}
+
+/* Active state - arrow points left */
+.main-menu_item.active .main-menu_submenu-toggle svg {
+  transform: rotate(180deg); /* Rotate 180 degrees to point left */
 }
 
 .main-menu_submenu {
   display: none;
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
+
+
 .main-menu_submenu-item {
-  margin-bottom: 30px;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--swatch--anchor-100, #A6B5B1);
+}
+
+.main-menu_submenu-item div { 
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .main-menu_submenu-header {
@@ -512,6 +541,19 @@ html.lenis {
   visibility: visible;
 }
 
+/* Update the secondary close button styles */
+.main-menu_close-secondary {
+    position: relative;
+    top: 0;
+    right: 0;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Ensure the secondary close button has the same hover effect as the primary */
+.main-menu_close-secondary:hover {
+    transform: rotate(90deg);
+}
+
 /* Hide primary close button when submenu is active */
 .main-menu.submenu-active .main-menu_close-primary {
   opacity: 0;
@@ -535,7 +577,6 @@ html.lenis {
   border-radius: 4px;
   font-weight: 500;
   transition: background-color 0.3s ease;
-  margin-bottom: 30px;
   cursor: pointer;
 }
 
@@ -557,7 +598,7 @@ html.lenis {
   
   .main-menu_primary,
   .main-menu_secondary {
-    padding: 100px 20px 40px;
+    padding: 7rem 4.5rem 2.5rem;
   }
   
   .main-menu_link-text {
@@ -584,26 +625,6 @@ html.lenis {
   .main-menu {
     width: 100%;
   }
-}
-
-/* Arrow direction styles - Fixed */
-.main-menu_submenu-toggle svg {
-  transition: transform 0.3s ease;
-}
-
-/* Default state - arrow points right (no transform needed) */
-.main-menu_submenu-toggle svg {
-  transform: rotate(0deg);
-}
-
-/* Active state - arrow points left */
-.main-menu_item.active .main-menu_submenu-toggle svg {
-  transform: rotate(180deg); /* Rotate 180 degrees clockwise */
-}
-
-/* Remove the default rotation that's causing the issue */
-.main-menu_item.active .main-menu_submenu-toggle {
-  transform: none; /* Override the 90deg rotation */
 }
 
 /* Mobile menu styles */
@@ -664,7 +685,7 @@ html.lenis {
   /* Reset the left position for the primary panel */
   .main-menu.active .main-menu_primary {
     left: auto; /* Remove the left positioning */
-    position: static; /* Reset position to static */
+    position: relative; /* Reset position to static */
   }
   
   /* When submenu is active, ensure both panels are visible side by side */
@@ -677,12 +698,12 @@ html.lenis {
     opacity: 1;
     visibility: visible;
     left: auto;
-    position: static;
+    position: relative;
   }
   
   /* Ensure the secondary panel appears properly */
   .main-menu.submenu-active .main-menu_secondary {
-    position: static;
+    position: relative;
     right: auto;
   }
   
@@ -700,7 +721,7 @@ html.lenis {
   /* Reset close button position when submenu is active */
   .main-menu.submenu-active .main-menu_close {
     left: auto;
-    right: 30px;
+    right: 0;
   }
 }
 
@@ -823,3 +844,29 @@ body:not(.keyboard-nav) .main-menu *:focus {
   font-weight: bold !important;
   margin-bottom: 10px !important;
 }
+
+.main-menu_action-links {
+    margin-top: auto;
+}
+
+.main-menu_action-links div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.main-menu_primary {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Fix for arrow orientation if needed */
+.arrow-fixed {
+  transform: rotate(0deg) !important; /* Force correct initial orientation */
+}
+
+.main-menu_item.active .arrow-fixed {
+  transform: rotate(180deg) !important; /* Force correct active orientation */
+}
+
+.main-menu_action-link { display: flex; align-items: center; gap: .25rem; }
