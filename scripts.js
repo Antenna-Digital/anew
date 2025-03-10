@@ -1,31 +1,7 @@
-  // Inline Lenis initialization
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('Inline Lenis initialization');
-    
-    // Wait a moment to ensure Lenis is loaded
-    setTimeout(function() {
-      if (typeof window.Lenis === 'function') {
-        const lenis = new window.Lenis({
-          duration: 1.2,
-          smooth: true
-        });
-        
-        function raf(time) {
-          lenis.raf(time);
-          requestAnimationFrame(raf);
-        }
-        
-        requestAnimationFrame(raf);
-        console.log('Lenis initialized');
-        window.lenis = lenis;
-      } else {
-        console.error('Lenis not available for inline initialization');
-      }
-    }, 500);
-  });
+gsap.registerPlugin(ScrollTrigger);
 
-// Initialize Swiper sliders for all instances of .home-hero_slider
-document.addEventListener('DOMContentLoaded', function() {
+
+function initHeroSliders() {
   // Swiper slider initialization
   const sliderContainers = document.querySelectorAll('.home-hero_slider');
   if (sliderContainers.length > 0) {
@@ -52,209 +28,135 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-  
-  // Team connected sliders initialization
-  function initTeamSliders() {
-    // Find all team components on the page
-    const teamComponents = document.querySelectorAll('.team');
-    
-    if (teamComponents.length === 0) return;
-    
-    teamComponents.forEach(function(teamComponent) {
-      // Find the main slider and track slider within this team component
-      const mainSliderContainer = teamComponent.querySelector('.team_slider-main');
-      const trackSliderContainer = teamComponent.querySelector('.team_slider-track');
-      
-      if (!mainSliderContainer || !trackSliderContainer) return;
-      
-      // Get the actual swiper elements
-      const mainSliderElement = mainSliderContainer.querySelector('.swiper');
-      const trackSliderElement = trackSliderContainer.querySelector('.swiper');
-      
-      if (!mainSliderElement || !trackSliderElement) return;
-      
-      // Get navigation buttons first so we can reference them in the Swiper initialization
-      const prevButton = teamComponent.querySelector('.team_arrow.prev');
-      const nextButton = teamComponent.querySelector('.team_arrow.next');
-      
-      // Function to update arrow states
-      function updateArrowStates(swiper, prevBtn, nextBtn) {
-        if (!prevBtn || !nextBtn) return;
-        
-        // Check if we're at the beginning or end of the slider
-        if (swiper.isBeginning) {
-          prevBtn.classList.add('disabled');
-        } else {
-          prevBtn.classList.remove('disabled');
-        }
-        
-        if (swiper.isEnd) {
-          nextBtn.classList.add('disabled');
-        } else {
-          nextBtn.classList.remove('disabled');
-        }
-      }
-      
-      // Initialize the main slider
-      const mainSwiper = new Swiper(mainSliderElement, {
-        effect: 'slide',
-        slidesPerView: 1,
-        // Remove autoplay
-        // Disable loop
-        loop: false,
-        speed: 200,
-        watchSlidesProgress: true,
-        // Disable touch/swipe controls
-        allowTouchMove: false,
-        // Remove navigation from Swiper initialization
-        // We'll handle it manually
-        on: {
-          init: function() {
-            // Update arrow states on initialization
-            updateArrowStates(this, prevButton, nextButton);
-            
-            // Update the counter with correct class names
-            const currentCounter = teamComponent.querySelector('.team_current');
-            const totalCounter = teamComponent.querySelector('.team_total');
-            
-            if (currentCounter && totalCounter) {
-              currentCounter.textContent = this.activeIndex + 1;
-              totalCounter.textContent = this.slides.length;
-            }
-          },
-          slideChange: function() {
-            // Update arrow states when slides change
-            updateArrowStates(this, prevButton, nextButton);
-            
-            // Update the counter with correct class names
-            const currentCounter = teamComponent.querySelector('.team_current');
-            const totalCounter = teamComponent.querySelector('.team_total');
-            
-            if (currentCounter && totalCounter) {
-              currentCounter.textContent = this.activeIndex + 1;
-              totalCounter.textContent = this.slides.length;
-            }
-            
-            // Update track slider manually
-            if (trackSwiper) {
-              trackSwiper.slideTo(this.activeIndex + 1, 100);
-            }
-          }
-        }
-      });
-      
-      // Initialize the track slider with faster animation speed
-      const trackSwiper = new Swiper(trackSliderElement, {
-        slidesPerView: 3,
-        spaceBetween: 20,
-        // Disable loop
-        loop: false,
-        // Faster speed for track slider to ensure it keeps up with main slider
-        speed: 100, // Reduced from 200 to 100
-        // Disable autoplay on track slider
-        autoplay: false,
-        // Enable smooth transitions between slides
-        effect: 'slide',
-        // Disable touch/swipe controls
-        allowTouchMove: false,
-        // Important: Remove slidesPerGroup to prevent grouping
-        // Start at the next slide (offset by 1)
-        initialSlide: 1,
-        // Allow sliding beyond the end
-        allowSlideNext: true,
-        // Add fixed space after the last slide
-        slidesOffsetAfter: trackSliderContainer.offsetWidth,
-        // Responsive breakpoints
-        breakpoints: {
-          0: {
-            slidesPerView: 1.5,
-            spaceBetween: 10
-          },
-          480: {
-            slidesPerView: 2,
-            spaceBetween: 15
-          },
-          768: {
-            slidesPerView: 1,
-            spaceBetween: 15
-          },
-          992: {
-            slidesPerView: 2.5,
-            spaceBetween: 20
-          }
-        }
-      });
-      
-      // Add click functionality to track slider slides
-      trackSliderElement.querySelectorAll('.swiper-slide').forEach(function(slide, index) {
-        slide.addEventListener('click', function() {
-          // Use slideTo instead of slideToLoop since loop is disabled
-          mainSwiper.slideTo(index);
-        });
-      });
-      
-      // Initial arrow state update
-      updateArrowStates(mainSwiper, prevButton, nextButton);
-      
-      if (prevButton) {
-        prevButton.addEventListener('click', function(e) {
-          e.preventDefault();
-          // Move main slider back one slide
-          if (mainSwiper.activeIndex > 0) {
-            mainSwiper.slideTo(mainSwiper.activeIndex - 1);
-          }
-        });
-      }
-      
-      if (nextButton) {
-        nextButton.addEventListener('click', function(e) {
-          e.preventDefault();
-          // Move main slider forward one slide
-          if (mainSwiper.activeIndex < mainSwiper.slides.length - 1) {
-            mainSwiper.slideTo(mainSwiper.activeIndex + 1);
-          }
-        });
-      }
-    });
-  }
-  
-  // Initialize team sliders
-  initTeamSliders();
-  
-  // Position the vertical line
-  function positionVerticalLine() {
-    const verticalLine = document.querySelector('.vertical-line');
-    const heroButtons = document.querySelector('.home-hero_buttons');
-    const homeHero = document.querySelector('.home-hero');
-    
-    if (verticalLine && heroButtons && homeHero) {
-      // Get the home-hero container dimensions
-      const heroRect = homeHero.getBoundingClientRect();
-      const buttonsRect = heroButtons.getBoundingClientRect();
-      
-      // Calculate the position relative to the home-hero container
-      // This centers the line with the middle of the buttons
-      const buttonsMidpoint = buttonsRect.top + (buttonsRect.height / 2);
-      const positionFromHeroTop = buttonsMidpoint - heroRect.top;
-      
-      // Position the line relative to the home-hero container
-      verticalLine.style.top = `${positionFromHeroTop}px`;
-      verticalLine.style.position = 'absolute';
-      verticalLine.style.transform = 'translateY(-50%)'; // Center the line itself
-    }
-  }
-  
-  // Only set up vertical line positioning if the elements exist
-  const verticalLine = document.querySelector('.vertical-line');
-  const heroButtons = document.querySelector('.home-hero_buttons');
-  if (verticalLine && heroButtons) {
-    // Position on load
-    positionVerticalLine();
-    
-    // Reposition on window resize
-    window.addEventListener('resize', positionVerticalLine);
-  }
+}
+//Position the vertical line
+function positionVerticalLine() {
+const verticalLine = document.querySelector('.vertical-line');
+const heroButtons = document.querySelector('.home-hero_buttons');
+const homeHero = document.querySelector('.home-hero');
 
+if (verticalLine && heroButtons && homeHero) {
+    // Get the home-hero container dimensions
+    const heroRect = homeHero.getBoundingClientRect();
+    const buttonsRect = heroButtons.getBoundingClientRect();
+    
+    // Calculate the position relative to the home-hero container
+    // This centers the line with the middle of the buttons
+    const buttonsMidpoint = buttonsRect.top + (buttonsRect.height / 2);
+    const positionFromHeroTop = buttonsMidpoint - heroRect.top;
+    
+    // Position the line relative to the home-hero container
+    verticalLine.style.top = `${positionFromHeroTop}px`;
+    verticalLine.style.position = 'absolute';
+    verticalLine.style.transform = 'translateY(-50%)'; // Center the line itself
+}
+}
+function resizeVerticalLine() {
+// Only set up vertical line positioning if the elements exist
+const verticalLine = document.querySelector('.vertical-line');
+const heroButtons = document.querySelector('.home-hero_buttons');
+if (verticalLine && heroButtons) {
+// Position on load
+positionVerticalLine();
+
+// Reposition on window resize
+window.addEventListener('resize', positionVerticalLine);
+}
+}
+
+// Function to create and position the connecting line between split-CTA graphics
+function createConnectingLine() {
+    // Get the two graphic elements
+    const leftGraphic = document.querySelector('.split-cta_graphic.left');
+    const rightGraphic = document.querySelector('.split-cta_graphic.right');
+    const splitCtaContainer = document.querySelector('.split-cta');
+    
+    // Only proceed if all required elements exist
+    if (!leftGraphic || !rightGraphic || !splitCtaContainer) {
+        return;
+    }
+    
+    // Check if the line already exists, remove it if it does to prevent duplicates
+    const existingLine = document.querySelector('.split-cta-connecting-line');
+    if (existingLine) {
+        existingLine.remove();
+    }
+    
+    // Create an SVG element for the line
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('split-cta-connecting-line');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none'; // Make sure it doesn't interfere with clicks
+    svg.style.zIndex = '1'; // Place it above other elements if needed
+    
+    // Get the positions of the graphics relative to the split-cta container
+    const leftRect = leftGraphic.getBoundingClientRect();
+    const rightRect = rightGraphic.getBoundingClientRect();
+    const containerRect = splitCtaContainer.getBoundingClientRect();
+    
+    // Check if we're on a mobile/tablet screen (991px or less)
+    const isMobile = window.innerWidth <= 991;
+    
+    let startX, startY, endX, endY;
+    
+    if (isMobile) {
+        // For mobile: bottom middle of left graphic to top middle of right graphic
+        startX = leftRect.left + (leftRect.width / 2) - containerRect.left;
+        startY = leftRect.bottom - containerRect.top;
+        
+        endX = rightRect.left + (rightRect.width / 2) - containerRect.left;
+        endY = rightRect.top - containerRect.top;
+    } else {
+        // For desktop: middle right of left graphic to middle left of right graphic
+        startX = leftRect.right - containerRect.left;
+        startY = containerRect.height / 2; // Center of container
+        
+        endX = rightRect.left - containerRect.left;
+        endY = containerRect.height / 2; // Center of container
+    }
+    
+    // Create the line element
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', startX);
+    line.setAttribute('y1', startY);
+    line.setAttribute('x2', endX);
+    line.setAttribute('y2', endY);
+    line.setAttribute('stroke', 'white');
+    line.setAttribute('stroke-opacity', '0.75');
+    line.setAttribute('stroke-width', '2');
+    
+    // Add the line to the SVG
+    svg.appendChild(line);
+    
+    // Add the SVG to the split-cta container
+    splitCtaContainer.appendChild(svg);
+    }
+      
+    function initVerticalLine() {
+      // Only set up split-CTA connecting line if elements exist
+      const splitCtaElements = document.querySelector('.split-cta');
+      if (splitCtaElements) {
+        // Initial creation with multiple attempts
+        createConnectingLine();
+        
+        // Try again after delays to ensure proper positioning
+        setTimeout(createConnectingLine, 500);
+        setTimeout(createConnectingLine, 1500);
+        setTimeout(createConnectingLine, 3000);
+        
+        // Also try when window fully loads
+        window.addEventListener('load', createConnectingLine);
+        
+        // Update immediately on resize without debounce for responsiveness
+        window.addEventListener('resize', createConnectingLine);
+      }
+    }
+
+function initSubAccordions() {
   // Sub-accordion functionality
   const subAccordionLists = document.querySelectorAll('.sub-accordion_list');
   
@@ -386,13 +288,14 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
+}
 
+function initScrollExperience() {
   // GSAP ScrollTrigger Pin Section - only initialize if elements exist
   const scrollExperienceContainer = document.querySelector('.scroll-experience-container');
   const accordionItems = document.querySelectorAll('.accordion_item');
   
   if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined' && scrollExperienceContainer && accordionItems.length > 0) {
-    gsap.registerPlugin(ScrollTrigger);
     
     // Set first accordion item as active on page load
     accordionItems[0].classList.add('active');
@@ -490,176 +393,90 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   }
+}
 
-  function imageSrcSetFix() {
-    // Handle improperly loaded srcset size for responsive images
-    var images = document.getElementsByTagName("img");
-    
-    if (images.length === 0) return;
-  
-    function updateImageSizes() {
-      for (var i = 0; i < images.length; i++) {
-        var image = images[i];
-  
-        // Check if the image has already been sized
-        if (!image.dataset.sized) {
-          if (image.complete) {
-            setImageSizes(image);
-          } else {
-            // Add a one-time load event listener
-            image.addEventListener(
-              "load",
-              function () {
-                setImageSizes(this);
-              },
-              { once: true }
-            );
-          }
+function imageSrcSetFix() {
+// Handle improperly loaded srcset size for responsive images
+var images = document.getElementsByTagName("img");
+
+if (images.length === 0) return;
+
+function updateImageSizes() {
+    for (var i = 0; i < images.length; i++) {
+    var image = images[i];
+
+    // Check if the image has already been sized
+    if (!image.dataset.sized) {
+        if (image.complete) {
+        setImageSizes(image);
+        } else {
+        // Add a one-time load event listener
+        image.addEventListener(
+            "load",
+            function () {
+            setImageSizes(this);
+            },
+            { once: true }
+        );
         }
-      }
     }
-  
-    function setImageSizes(image) {
-      var imageRect = image.getBoundingClientRect();
-      var imageWidth = imageRect.width;
-      var imageHeight = imageRect.height;
-      var viewportWidth = window.innerWidth;
-      var viewportHeight = window.innerHeight;
-  
-      // Calculate width percentage
-      var widthPercentage = (imageWidth / viewportWidth) * 100;
-  
-      // Calculate height percentage
-      var heightPercentage = (imageHeight / viewportHeight) * 100;
-  
-      // Combine width and height considerations
-      var combinedSizeValue =
-        Math.round(widthPercentage * 0.7 + heightPercentage * 0.3) + "vw";
-  
-      // Optional: Add a minimum and maximum size constraint
-      var minSize = 10; // Minimum 10vw
-      var maxSize = 90; // Maximum 90vw
-      var finalSizeValue =
-        Math.min(Math.max(parseFloat(combinedSizeValue), minSize), maxSize) +
-        "vw";
-  
-      // Set sizes attribute
-      image.setAttribute("sizes", finalSizeValue);
-  
-      // Mark as sized to avoid redundant processing
-      image.dataset.sized = "true";
     }
-  
-    // Debounce function to limit function calls during resize
-    function debounce(func, delay) {
-      let timer;
-      return function () {
-        clearTimeout(timer);
-        timer = setTimeout(func, delay);
-      };
-    }
-  
-    // Update image sizes on initial load
-    updateImageSizes();
-  
-    // Update image sizes on window resize with debounce
-    window.addEventListener("resize", debounce(updateImageSizes, 200));
-  }
+}
 
-  // Only run image fix if there are images on the page
-  if (document.getElementsByTagName("img").length > 0) {
-    imageSrcSetFix();
-  }
+function setImageSizes(image) {
+    var imageRect = image.getBoundingClientRect();
+    var imageWidth = imageRect.width;
+    var imageHeight = imageRect.height;
+    var viewportWidth = window.innerWidth;
+    var viewportHeight = window.innerHeight;
 
-  // Function to create and position the connecting line between split-CTA graphics
-  function createConnectingLine() {
-    // Get the two graphic elements
-    const leftGraphic = document.querySelector('.split-cta_graphic.left');
-    const rightGraphic = document.querySelector('.split-cta_graphic.right');
-    const splitCtaContainer = document.querySelector('.split-cta');
-    
-    // Only proceed if all required elements exist
-    if (!leftGraphic || !rightGraphic || !splitCtaContainer) {
-      return;
-    }
-    
-    // Check if the line already exists, remove it if it does to prevent duplicates
-    const existingLine = document.querySelector('.split-cta-connecting-line');
-    if (existingLine) {
-      existingLine.remove();
-    }
-    
-    // Create an SVG element for the line
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.classList.add('split-cta-connecting-line');
-    svg.style.position = 'absolute';
-    svg.style.top = '0';
-    svg.style.left = '0';
-    svg.style.width = '100%';
-    svg.style.height = '100%';
-    svg.style.pointerEvents = 'none'; // Make sure it doesn't interfere with clicks
-    svg.style.zIndex = '1'; // Place it above other elements if needed
-    
-    // Get the positions of the graphics relative to the split-cta container
-    const leftRect = leftGraphic.getBoundingClientRect();
-    const rightRect = rightGraphic.getBoundingClientRect();
-    const containerRect = splitCtaContainer.getBoundingClientRect();
-    
-    // Check if we're on a mobile/tablet screen (991px or less)
-    const isMobile = window.innerWidth <= 991;
-    
-    let startX, startY, endX, endY;
-    
-    if (isMobile) {
-      // For mobile: bottom middle of left graphic to top middle of right graphic
-      startX = leftRect.left + (leftRect.width / 2) - containerRect.left;
-      startY = leftRect.bottom - containerRect.top;
-      
-      endX = rightRect.left + (rightRect.width / 2) - containerRect.left;
-      endY = rightRect.top - containerRect.top;
-    } else {
-      // For desktop: middle right of left graphic to middle left of right graphic
-      startX = leftRect.right - containerRect.left;
-      startY = containerRect.height / 2; // Center of container
-      
-      endX = rightRect.left - containerRect.left;
-      endY = containerRect.height / 2; // Center of container
-    }
-    
-    // Create the line element
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', startX);
-    line.setAttribute('y1', startY);
-    line.setAttribute('x2', endX);
-    line.setAttribute('y2', endY);
-    line.setAttribute('stroke', 'white');
-    line.setAttribute('stroke-opacity', '0.75');
-    line.setAttribute('stroke-width', '2');
-    
-    // Add the line to the SVG
-    svg.appendChild(line);
-    
-    // Add the SVG to the split-cta container
-    splitCtaContainer.appendChild(svg);
-  }
-  
-  // Only set up split-CTA connecting line if elements exist
-  const splitCtaElements = document.querySelector('.split-cta');
-  if (splitCtaElements) {
-    // Initial creation with multiple attempts
-    createConnectingLine();
-    
-    // Try again after delays to ensure proper positioning
-    setTimeout(createConnectingLine, 500);
-    setTimeout(createConnectingLine, 1500);
-    setTimeout(createConnectingLine, 3000);
-    
-    // Also try when window fully loads
-    window.addEventListener('load', createConnectingLine);
-    
-    // Update immediately on resize without debounce for responsiveness
-    window.addEventListener('resize', createConnectingLine);
-  }
+    // Calculate width percentage
+    var widthPercentage = (imageWidth / viewportWidth) * 100;
+
+    // Calculate height percentage
+    var heightPercentage = (imageHeight / viewportHeight) * 100;
+
+    // Combine width and height considerations
+    var combinedSizeValue =
+    Math.round(widthPercentage * 0.7 + heightPercentage * 0.3) + "vw";
+
+    // Optional: Add a minimum and maximum size constraint
+    var minSize = 10; // Minimum 10vw
+    var maxSize = 90; // Maximum 90vw
+    var finalSizeValue =
+    Math.min(Math.max(parseFloat(combinedSizeValue), minSize), maxSize) +
+    "vw";
+
+    // Set sizes attribute
+    image.setAttribute("sizes", finalSizeValue);
+
+    // Mark as sized to avoid redundant processing
+    image.dataset.sized = "true";
+}
+
+// Debounce function to limit function calls during resize
+function debounce(func, delay) {
+    let timer;
+    return function () {
+    clearTimeout(timer);
+    timer = setTimeout(func, delay);
+    };
+}
+
+// Update image sizes on initial load
+updateImageSizes();
+
+// Update image sizes on window resize with debounce
+window.addEventListener("resize", debounce(updateImageSizes, 200));
+}
+
+// Only run image fix if there are images on the page
+if (document.getElementsByTagName("img").length > 0) {
+imageSrcSetFix();
+}
+
+
+function initImageCards() {
 
   // Image card text animation
   const imageCards = document.querySelectorAll('.image-card');
@@ -726,10 +543,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+}
 
-  // Tab functionality
-  function initTabContainers() {
-    const tabContainers = document.querySelectorAll('.tab-container');
+function initTabContainers() {
+  const tabContainers = document.querySelectorAll('.tab-container');
     
     if (tabContainers.length === 0) return;
     
@@ -781,38 +598,6 @@ document.addEventListener('DOMContentLoaded', function() {
           iconElement.textContent = index === 0 ? '-' : '+';
         }
         
-        // Make tabs keyboard navigable
-        navItem.addEventListener('keydown', (e) => {
-          // Handle arrow keys
-          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            e.preventDefault();
-            
-            const direction = e.key === 'ArrowLeft' ? -1 : 1;
-            let newIndex = index + direction;
-            
-            // Handle wrapping around
-            if (newIndex < 0) newIndex = tabNavItems.length - 1;
-            if (newIndex >= tabNavItems.length) newIndex = 0;
-            
-            // Activate the new tab
-            tabNavItems[newIndex].click();
-            tabNavItems[newIndex].focus();
-          }
-          
-          // Handle Home and End keys
-          if (e.key === 'Home') {
-            e.preventDefault();
-            tabNavItems[0].click();
-            tabNavItems[0].focus();
-          }
-          
-          if (e.key === 'End') {
-            e.preventDefault();
-            tabNavItems[tabNavItems.length - 1].click();
-            tabNavItems[tabNavItems.length - 1].focus();
-          }
-        });
-        
         navItem.addEventListener('click', function() {
           // Remove active class from all nav items
           tabNavItems.forEach(item => {
@@ -848,259 +633,257 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
     });
-  }
+}
   
-  // Initialize tab containers
-  initTabContainers();
+// Initialize tab containers
 
-  // Menu functionality
-  function initializeMenu() {
-    const menuButton = document.querySelector('.main-menu_button');
-    const mainMenu = document.querySelector('.main-menu');
-    const submenuToggles = document.querySelectorAll('.main-menu_submenu-toggle');
+
+// Menu functionality
+function initializeMenu() {
+const menuButton = document.querySelector('.main-menu_button');
+const mainMenu = document.querySelector('.main-menu');
+const submenuToggles = document.querySelectorAll('.main-menu_submenu-toggle');
+
+// Check if menu elements exist
+if (!menuButton || !mainMenu) return;
+
+// Restructure the menu for the slide effect
+restructureMenu();
+
+// Remove the third close button if it exists
+const extraCloseButton = mainMenu.querySelector('.main-menu_close:not(.main-menu_close-primary):not(.main-menu_close-secondary)');
+if (extraCloseButton) {
+    extraCloseButton.remove();
+}
+
+// Toggle main menu
+menuButton.addEventListener('click', function() {
+    // Toggle the active class to show/hide the menu
+    mainMenu.classList.toggle('active');
     
-    // Check if menu elements exist
-    if (!menuButton || !mainMenu) return;
-    
-    // Restructure the menu for the slide effect
-    restructureMenu();
-    
-    // Remove the third close button if it exists
-    const extraCloseButton = mainMenu.querySelector('.main-menu_close:not(.main-menu_close-primary):not(.main-menu_close-secondary)');
-    if (extraCloseButton) {
-      extraCloseButton.remove();
+    // If the menu is being closed, also reset any submenu state
+    if (!mainMenu.classList.contains('active')) {
+    resetSubmenuState();
     }
     
-    // Toggle main menu
-    menuButton.addEventListener('click', function() {
-      // Toggle the active class to show/hide the menu
-      mainMenu.classList.toggle('active');
-      
-      // If the menu is being closed, also reset any submenu state
-      if (!mainMenu.classList.contains('active')) {
-        resetSubmenuState();
-      }
-      
-      // Toggle body scroll
-      if (mainMenu.classList.contains('active')) {
-        document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
-      } else {
-        document.body.style.overflow = ''; // Restore scrolling
-      }
+    // Toggle body scroll
+    if (mainMenu.classList.contains('active')) {
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+    } else {
+    document.body.style.overflow = ''; // Restore scrolling
+    }
+});
+
+// Add event listeners to both close buttons
+document.querySelectorAll('.main-menu_close').forEach(button => {
+    button.addEventListener('click', function() {
+    mainMenu.classList.remove('active');
+    resetSubmenuState();
+    document.body.style.overflow = ''; // Restore scrolling
     });
+});
+
+// Toggle submenu - Fixed to preserve secondary close button
+submenuToggles.forEach(toggle => {
+    toggle.addEventListener('click', function() {
+    const menuItem = this.closest('.main-menu_item');
+    
+    if (menuItem) {
+        // Check if this item is already active
+        const isActive = menuItem.classList.contains('active');
+        
+        // Reset all other active items first
+        document.querySelectorAll('.main-menu_item.active').forEach(item => {
+        if (item !== menuItem) {
+            item.classList.remove('active');
+        }
+        });
+        
+        // Toggle active state instead of always adding it
+        if (isActive) {
+        menuItem.classList.remove('active');
+        mainMenu.classList.remove('submenu-active');
+        } else {
+        menuItem.classList.add('active');
+        
+        // Show the corresponding submenu in the secondary panel
+        const submenu = menuItem.querySelector('.main-menu_submenu');
+        const secondaryPanel = document.querySelector('.main-menu_secondary');
+        
+        if (submenu && secondaryPanel) {
+            // Clear the secondary panel completely
+            secondaryPanel.innerHTML = '';
+            
+            // Create a header container for the back button and close button
+            const headerContainer = document.createElement('div');
+            headerContainer.style.display = 'flex';
+            headerContainer.style.justifyContent = 'space-between';
+            headerContainer.style.alignItems = 'center';
+            headerContainer.style.width = 'calc(100% - 9rem)'; // Account for padding on both sides
+            headerContainer.style.position = 'absolute';
+            headerContainer.style.top = '30px';
+            headerContainer.style.left = '4.5rem';
+            headerContainer.style.zIndex = '1010';
+            
+            // Add a back button
+            const backButton = document.createElement('div');
+            backButton.className = 'main-menu_back';
+            backButton.innerHTML = '← Back';
+            headerContainer.appendChild(backButton);
+            
+            // Add a close button
+            const closeButton = document.createElement('div');
+            closeButton.className = 'main-menu_close main-menu_close-secondary';
+            headerContainer.appendChild(closeButton);
+            
+            // Add the header container to the secondary panel
+            secondaryPanel.appendChild(headerContainer);
+            
+            // Add the submenu content with margin-top
+            const submenuContainer = document.createElement('div');
+            secondaryPanel.appendChild(submenuContainer);
+            
+            // Clone the submenu content to the submenu container
+            submenuContainer.appendChild(submenu.cloneNode(true));
+            const clonedSubmenu = submenuContainer.querySelector('.main-menu_submenu');
+            clonedSubmenu.style.display = 'flex'; // Set display to flex
+            
+            // Handle back button click
+            backButton.addEventListener('click', function() {
+            // Reset the menu to show only the primary panel
+            mainMenu.classList.remove('submenu-active');
+            
+            // Reset all active states to return arrows to default position
+            document.querySelectorAll('.main-menu_item.active').forEach(item => {
+                item.classList.remove('active');
+            });
+            });
+            
+            // Handle close button click
+            closeButton.addEventListener('click', function() {
+            mainMenu.classList.remove('active');
+            resetSubmenuState();
+            document.body.style.overflow = ''; // Restore scrolling
+            });
+            
+            // Add class to show submenu
+            mainMenu.classList.add('submenu-active');
+        }
+        }
+    }
+    });
+});
+
+// Function to reset submenu state
+function resetSubmenuState() {
+    mainMenu.classList.remove('submenu-active');
+    
+    // Reset all active states to return arrows to default position
+    const activeItems = document.querySelectorAll('.main-menu_item.active');
+    activeItems.forEach(item => {
+    item.classList.remove('active');
+    });
+}
+
+// Function to restructure the menu for the slide effect - Updated with two close buttons
+function restructureMenu() {
+    // Create container for primary and secondary panels
+    const menuContainer = document.createElement('div');
+    menuContainer.className = 'main-menu_container';
+    
+    // Create primary panel
+    const primaryPanel = document.createElement('div');
+    primaryPanel.className = 'main-menu_primary';
+    
+    // Move all menu items to the primary panel
+    const menuItems = Array.from(mainMenu.querySelectorAll('.main-menu_item'));
+    menuItems.forEach(item => {
+    primaryPanel.appendChild(item);
+    });
+    
+    // Add action links to the primary panel
+    const actionLinks = mainMenu.querySelector('.main-menu_action-links');
+    if (actionLinks) {
+    primaryPanel.appendChild(actionLinks);
+    } else {
+    // Create action links if they don't exist
+    const actionLinksHTML = `
+        <div class="main-menu_action-links">
+        <div>
+            <a href="#" class="main-menu_action-link w-inline-block">
+            <div>Secondary Action</div>
+            <div class="icon w-embed">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.5875 6.4125L4.5 12.5L3.5 11.5L9.5875 5.4125L3.9875 5.4125L4 4H12V12L10.5875 12.0125L10.5875 6.4125Z" fill="#F4F3F1"></path>
+                </svg>
+            </div>
+            </a>
+            <div class="main-menu_action-button">
+            <div data-wf--button-main--variant="base" class="btn_main_wrap">
+                <div class="g_clickable_wrap">
+                <a target="" href="#" class="g_clickable_link w-inline-block">
+                    <span class="g_clickable_text u-sr-only">Button Text</span>
+                </a>
+                <button type="button" class="g_clickable_btn">
+                    <span class="g_clickable_text u-sr-only">Button Text</span>
+                </button>
+                </div>
+                <div aria-hidden="true" class="btn_main_text">Button Text</div>
+            </div>
+            </div>
+        </div>
+        </div>
+    `;
+    const actionLinksElement = document.createElement('div');
+    actionLinksElement.innerHTML = actionLinksHTML;
+    primaryPanel.appendChild(actionLinksElement.firstChild);
+    }
+    
+    // Create primary close button
+    const primaryCloseButton = document.createElement('div');
+    primaryCloseButton.className = 'main-menu_close main-menu_close-primary';
+    primaryPanel.appendChild(primaryCloseButton);
+    
+    // Create secondary panel
+    const secondaryPanel = document.createElement('div');
+    secondaryPanel.className = 'main-menu_secondary';
+    
+    // Create secondary close button
+    const secondaryCloseButton = document.createElement('div');
+    secondaryCloseButton.className = 'main-menu_close main-menu_close-secondary';
+    secondaryPanel.appendChild(secondaryCloseButton);
+    
+    // Add panels to container
+    menuContainer.appendChild(primaryPanel);
+    menuContainer.appendChild(secondaryPanel);
+    
+    // Add container to menu
+    mainMenu.appendChild(menuContainer);
     
     // Add event listeners to both close buttons
     document.querySelectorAll('.main-menu_close').forEach(button => {
-      button.addEventListener('click', function() {
+    button.addEventListener('click', function() {
         mainMenu.classList.remove('active');
         resetSubmenuState();
         document.body.style.overflow = ''; // Restore scrolling
-      });
     });
-    
-    // Toggle submenu - Fixed to preserve secondary close button
-    submenuToggles.forEach(toggle => {
-      toggle.addEventListener('click', function() {
-        const menuItem = this.closest('.main-menu_item');
-        
-        if (menuItem) {
-          // Check if this item is already active
-          const isActive = menuItem.classList.contains('active');
-          
-          // Reset all other active items first
-          document.querySelectorAll('.main-menu_item.active').forEach(item => {
-            if (item !== menuItem) {
-              item.classList.remove('active');
-            }
-          });
-          
-          // Toggle active state instead of always adding it
-          if (isActive) {
-            menuItem.classList.remove('active');
-            mainMenu.classList.remove('submenu-active');
-          } else {
-            menuItem.classList.add('active');
-            
-            // Show the corresponding submenu in the secondary panel
-            const submenu = menuItem.querySelector('.main-menu_submenu');
-            const secondaryPanel = document.querySelector('.main-menu_secondary');
-            
-            if (submenu && secondaryPanel) {
-              // Clear the secondary panel completely
-              secondaryPanel.innerHTML = '';
-              
-              // Create a header container for the back button and close button
-              const headerContainer = document.createElement('div');
-              headerContainer.style.display = 'flex';
-              headerContainer.style.justifyContent = 'space-between';
-              headerContainer.style.alignItems = 'center';
-              headerContainer.style.width = 'calc(100% - 9rem)'; // Account for padding on both sides
-              headerContainer.style.position = 'absolute';
-              headerContainer.style.top = '30px';
-              headerContainer.style.left = '4.5rem';
-              headerContainer.style.zIndex = '1010';
-              
-              // Add a back button
-              const backButton = document.createElement('div');
-              backButton.className = 'main-menu_back';
-              backButton.innerHTML = '← Back';
-              headerContainer.appendChild(backButton);
-              
-              // Add a close button
-              const closeButton = document.createElement('div');
-              closeButton.className = 'main-menu_close main-menu_close-secondary';
-              headerContainer.appendChild(closeButton);
-              
-              // Add the header container to the secondary panel
-              secondaryPanel.appendChild(headerContainer);
-              
-              // Add the submenu content with margin-top
-              const submenuContainer = document.createElement('div');
-              secondaryPanel.appendChild(submenuContainer);
-              
-              // Clone the submenu content to the submenu container
-              submenuContainer.appendChild(submenu.cloneNode(true));
-              const clonedSubmenu = submenuContainer.querySelector('.main-menu_submenu');
-              clonedSubmenu.style.display = 'flex'; // Set display to flex
-              
-              // Handle back button click
-              backButton.addEventListener('click', function() {
-                // Reset the menu to show only the primary panel
-                mainMenu.classList.remove('submenu-active');
-                
-                // Reset all active states to return arrows to default position
-                document.querySelectorAll('.main-menu_item.active').forEach(item => {
-                  item.classList.remove('active');
-                });
-              });
-              
-              // Handle close button click
-              closeButton.addEventListener('click', function() {
-                mainMenu.classList.remove('active');
-                resetSubmenuState();
-                document.body.style.overflow = ''; // Restore scrolling
-              });
-              
-              // Add class to show submenu
-              mainMenu.classList.add('submenu-active');
-            }
-          }
-        }
-      });
     });
-    
-    // Function to reset submenu state
-    function resetSubmenuState() {
-      mainMenu.classList.remove('submenu-active');
-      
-      // Reset all active states to return arrows to default position
-      const activeItems = document.querySelectorAll('.main-menu_item.active');
-      activeItems.forEach(item => {
-        item.classList.remove('active');
-      });
-    }
-    
-    // Function to restructure the menu for the slide effect - Updated with two close buttons
-    function restructureMenu() {
-      // Create container for primary and secondary panels
-      const menuContainer = document.createElement('div');
-      menuContainer.className = 'main-menu_container';
-      
-      // Create primary panel
-      const primaryPanel = document.createElement('div');
-      primaryPanel.className = 'main-menu_primary';
-      
-      // Move all menu items to the primary panel
-      const menuItems = Array.from(mainMenu.querySelectorAll('.main-menu_item'));
-      menuItems.forEach(item => {
-        primaryPanel.appendChild(item);
-      });
-      
-      // Add action links to the primary panel
-      const actionLinks = mainMenu.querySelector('.main-menu_action-links');
-      if (actionLinks) {
-        primaryPanel.appendChild(actionLinks);
-      } else {
-        // Create action links if they don't exist
-        const actionLinksHTML = `
-          <div class="main-menu_action-links">
-            <div>
-              <a href="#" class="main-menu_action-link w-inline-block">
-                <div>Secondary Action</div>
-                <div class="icon w-embed">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10.5875 6.4125L4.5 12.5L3.5 11.5L9.5875 5.4125L3.9875 5.4125L4 4H12V12L10.5875 12.0125L10.5875 6.4125Z" fill="#F4F3F1"></path>
-                  </svg>
-                </div>
-              </a>
-              <div class="main-menu_action-button">
-                <div data-wf--button-main--variant="base" class="btn_main_wrap">
-                  <div class="g_clickable_wrap">
-                    <a target="" href="#" class="g_clickable_link w-inline-block">
-                      <span class="g_clickable_text u-sr-only">Button Text</span>
-                    </a>
-                    <button type="button" class="g_clickable_btn">
-                      <span class="g_clickable_text u-sr-only">Button Text</span>
-                    </button>
-                  </div>
-                  <div aria-hidden="true" class="btn_main_text">Button Text</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        const actionLinksElement = document.createElement('div');
-        actionLinksElement.innerHTML = actionLinksHTML;
-        primaryPanel.appendChild(actionLinksElement.firstChild);
-      }
-      
-      // Create primary close button
-      const primaryCloseButton = document.createElement('div');
-      primaryCloseButton.className = 'main-menu_close main-menu_close-primary';
-      primaryPanel.appendChild(primaryCloseButton);
-      
-      // Create secondary panel
-      const secondaryPanel = document.createElement('div');
-      secondaryPanel.className = 'main-menu_secondary';
-      
-      // Create secondary close button
-      const secondaryCloseButton = document.createElement('div');
-      secondaryCloseButton.className = 'main-menu_close main-menu_close-secondary';
-      secondaryPanel.appendChild(secondaryCloseButton);
-      
-      // Add panels to container
-      menuContainer.appendChild(primaryPanel);
-      menuContainer.appendChild(secondaryPanel);
-      
-      // Add container to menu
-      mainMenu.appendChild(menuContainer);
-      
-      // Add event listeners to both close buttons
-      document.querySelectorAll('.main-menu_close').forEach(button => {
-        button.addEventListener('click', function() {
-          mainMenu.classList.remove('active');
-          resetSubmenuState();
-          document.body.style.overflow = ''; // Restore scrolling
-        });
-      });
-    }
-
-    // Add keyboard navigation to the menu
-    addKeyboardNavigation();
-
-    // Fix arrow orientation
-    fixSubmenuArrows();
-  }
-  
-  // Initialize menu
-  initializeMenu();
-});
+}
 
 // Add keyboard navigation to the menu
+addKeyboardNavigation();
+
+// Fix arrow orientation
+fixSubmenuArrows();
+}
+
+// Function to add keyboard navigation to the menu
 function addKeyboardNavigation() {
   const menuButton = document.querySelector('.main-menu_button');
   const mainMenu = document.querySelector('.main-menu');
   const closeButtons = document.querySelectorAll('.main-menu_close');
+  
+  if (!menuButton || !mainMenu) return;
   
   // Add ARIA attributes to menu button
   menuButton.setAttribute('aria-expanded', 'false');
@@ -1336,7 +1119,7 @@ function addKeyboardNavigation() {
   observer.observe(mainMenu, { attributes: true });
 }
 
-// Detect keyboard navigation vs mouse - Fixed
+// Function to detect keyboard navigation vs mouse
 function detectKeyboardNavigation() {
   // Add class to body when using keyboard
   document.addEventListener('keydown', function(e) {
@@ -1354,10 +1137,7 @@ function detectKeyboardNavigation() {
   document.body.classList.add('keyboard-nav');
 }
 
-// Call this function on page load
-detectKeyboardNavigation();
-
-// Add this function to check and fix SVG orientation
+// Function to fix SVG orientation in submenu toggles
 function fixSubmenuArrows() {
   const submenuToggles = document.querySelectorAll('.main-menu_submenu-toggle');
   
@@ -1375,5 +1155,447 @@ function fixSubmenuArrows() {
   });
 }
 
+
+// Animation Functions
+function fadeUpOnScroll() {
+  document.querySelectorAll("[data-g-fade-up]").forEach((element) => {
+    gsap.fromTo(
+      element,
+      {
+        y: 100, // Initial position: 100px down
+        opacity: 0, // Initial opacity: 0 (invisible)
+      },
+      {
+        y: 0, // Final position: 0px (default position)
+        opacity: 1, // Final opacity: 1 (fully visible)
+        delay: element.dataset.gDelay ? parseFloat(element.dataset.gDelay) : 0,
+        duration: .75,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  });
+}
+
+function fadeSideOnScroll() {
+  document.querySelectorAll("[data-g-fade-side]").forEach((element) => {
+    // Determine direction from data attribute: "left" or "right"
+    const direction = element.dataset.gFadeSide || "left";
+
+    // Set initial X position based on direction
+    const startX = direction === "right" ? 100 : -100;
+
+    gsap.fromTo(
+      element,
+      {
+        x: startX, // Initial position: +/- 100px from side
+        opacity: 0, // Initial opacity: 0 (invisible)
+      },
+      {
+        x: 0, // Final position: 0px (default position)
+        opacity: 1, // Final opacity: 1 (fully visible)
+        delay: element.dataset.gDelay ? parseFloat(element.dataset.gDelay) : 0,
+        duration: .75,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  });
+}
+
+function growSideOnScroll() {
+  document.querySelectorAll("[data-g-grow-side]").forEach((element) => {
+    // Determine direction from data attribute: "left" or "right"
+    const direction = element.dataset.gFadeSide || "left";
+
+    // Set initial X position based on direction
+    const startX = direction === "right" ? 100 : -100;
+
+    gsap.fromTo(
+      element,
+      {
+        x: startX, // Initial position: +/- 100px from side
+        scaleX: 0, // Initial opacity: 0 (invisible)
+      },
+      {
+        x: 0, // Final position: 0px (default position)
+        scaleX: 1, // Final width: 1 (fully visible)
+        delay: element.dataset.gDelay ? parseFloat(element.dataset.gDelay) : 0,
+        duration: 1.0,
+        ease: "power1.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  });
+}
+
+function staggerAnimateOnScroll() {
+  document.querySelectorAll("[data-g-stagger]").forEach((parent) => {
+    const children = parent.children;
+    const delay = parent.dataset.gDelay ? parseFloat(parent.dataset.gDelay) : 0;
+    const staggerTime = parent.dataset.gStaggerTime
+      ? parseFloat(parent.dataset.gStaggerTime)
+      : 0.2;
+    const direction = parent.dataset.gDirection || "up";
+
+    // Define from and to states
+    let fromState = { opacity: 0 };
+    let toState = {
+      opacity: 1,
+      duration: .75,
+      ease: "power2.out",
+    };
+
+    // Add transform based on direction
+    switch (direction) {
+      case "up":
+        fromState.y = 100;
+        toState.y = 0;
+        break;
+      case "down":
+        fromState.y = -100;
+        toState.y = 0;
+        break;
+      case "left":
+        fromState.x = -100;
+        toState.x = 0;
+        break;
+      case "right":
+        fromState.x = 100;
+        toState.x = 0;
+        break;
+    }
+
+    gsap.fromTo(children, fromState, {
+      ...toState,
+      stagger: staggerTime,
+      delay: delay,
+      scrollTrigger: {
+        trigger: parent,
+        start: "top 80%",
+        toggleActions: "play none none none",
+      },
+    });
+  });
+}
+
+function fadeInOnScroll() {
+  document.querySelectorAll("[data-g-fade-in]").forEach((element) => {
+    gsap.fromTo(
+      element,
+      {
+        opacity: 0,
+      },
+      {
+        opacity: 1,
+        delay: element.dataset.gDelay ? parseFloat(element.dataset.gDelay) : 0,
+        duration: .75,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
+  });
+}
+
+function countUpOnScroll() {
+  document.querySelectorAll("[data-g-tick-up]").forEach((element) => {
+    const targetNumber = parseFloat(element.dataset.gTickUp);
+    const randomDuration = Math.random() * (3 - 1) + 1;
+
+    // Determine decimal places from the target number
+    const decimalPlaces = (targetNumber.toString().split(".")[1] || "").length;
+
+    // Store the initial number for reference
+    element.innerText = targetNumber;
+
+    gsap.fromTo(
+      element,
+      {
+        innerText: 0,
+      },
+      {
+        innerText: targetNumber,
+        duration: randomDuration,
+        ease: "power1.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+        onUpdate: function () {
+          const value = this.targets()[0].innerText;
+          // Format with the same number of decimal places as the target
+          element.innerText = parseFloat(value).toFixed(decimalPlaces);
+        },
+      }
+    );
+  });
+}
+
+// Inline Lenis initialization
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Inline Lenis initialization');
+  
+  // Wait a moment to ensure Lenis is loaded
+  setTimeout(function() {
+    if (typeof window.Lenis === 'function') {
+      const lenis = new window.Lenis({
+        duration: 1.2,
+        smooth: true
+      });
+      
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      
+      requestAnimationFrame(raf);
+      console.log('Lenis initialized');
+      window.lenis = lenis;
+    } else {
+      console.error('Lenis not available for inline initialization');
+    }
+  }, 500);
+});
+
+// Function to initialize hero sliders
+function initHeroSliders() {
+  const sliderContainers = document.querySelectorAll('.home-hero_slider');
+  if (sliderContainers.length === 0) return;
+  
+  sliderContainers.forEach(function(container) {
+    const swiperElement = container.querySelector('.swiper');
+    if (swiperElement) {
+      const swiper = new Swiper(swiperElement, {
+        // Enable fade effect
+        effect: 'fade',
+        fadeEffect: {
+          crossFade: true
+        },
+        
+        allowTouchMove: false,
+        // Show only one slide at a time
+        slidesPerView: 1,
+        
+        // Enable autoplay
+        autoplay: {
+          delay: 5000, // 5 seconds between slides
+          disableOnInteraction: false // Continue autoplay after user interaction
+        }
+      });
+    }
+  });
+}
+
+// Function to initialize team sliders
+function initTeamSliders() {
+  // Find all team components on the page
+  const teamComponents = document.querySelectorAll('.team');
+  
+  if (teamComponents.length === 0) return;
+  
+  teamComponents.forEach(function(teamComponent) {
+    // Find the main slider and track slider within this team component
+    const mainSliderContainer = teamComponent.querySelector('.team_slider-main');
+    const trackSliderContainer = teamComponent.querySelector('.team_slider-track');
+    
+    if (!mainSliderContainer || !trackSliderContainer) return;
+    
+    // Get the actual swiper elements
+    const mainSliderElement = mainSliderContainer.querySelector('.swiper');
+    const trackSliderElement = trackSliderContainer.querySelector('.swiper');
+    
+    if (!mainSliderElement || !trackSliderElement) return;
+    
+    // Get navigation buttons first so we can reference them in the Swiper initialization
+    const prevButton = teamComponent.querySelector('.team_arrow.prev');
+    const nextButton = teamComponent.querySelector('.team_arrow.next');
+    
+    // Function to update arrow states
+    function updateArrowStates(swiper, prevBtn, nextBtn) {
+      if (!prevBtn || !nextBtn) return;
+      
+      // Check if we're at the beginning or end of the slider
+      if (swiper.isBeginning) {
+        prevBtn.classList.add('disabled');
+      } else {
+        prevBtn.classList.remove('disabled');
+      }
+      
+      if (swiper.isEnd) {
+        nextBtn.classList.add('disabled');
+      } else {
+        nextBtn.classList.remove('disabled');
+      }
+    }
+    
+    // Initialize the main slider
+    const mainSwiper = new Swiper(mainSliderElement, {
+      effect: 'slide',
+      slidesPerView: 1,
+      // Remove autoplay
+      // Disable loop
+      loop: false,
+      speed: 200,
+      watchSlidesProgress: true,
+      // Disable touch/swipe controls
+      allowTouchMove: false,
+      // Remove navigation from Swiper initialization
+      // We'll handle it manually
+      on: {
+        init: function() {
+          // Update arrow states on initialization
+          updateArrowStates(this, prevButton, nextButton);
+          
+          // Update the counter with correct class names
+          const currentCounter = teamComponent.querySelector('.team_current');
+          const totalCounter = teamComponent.querySelector('.team_total');
+          
+          if (currentCounter && totalCounter) {
+            currentCounter.textContent = this.activeIndex + 1;
+            totalCounter.textContent = this.slides.length;
+          }
+        },
+        slideChange: function() {
+          // Update arrow states when slides change
+          updateArrowStates(this, prevButton, nextButton);
+          
+          // Update the counter with correct class names
+          const currentCounter = teamComponent.querySelector('.team_current');
+          const totalCounter = teamComponent.querySelector('.team_total');
+          
+          if (currentCounter && totalCounter) {
+            currentCounter.textContent = this.activeIndex + 1;
+            totalCounter.textContent = this.slides.length;
+          }
+          
+          // Update track slider manually
+          if (trackSwiper) {
+            trackSwiper.slideTo(this.activeIndex + 1, 100);
+          }
+        }
+      }
+    });
+    
+    // Initialize the track slider with faster animation speed
+    const trackSwiper = new Swiper(trackSliderElement, {
+      slidesPerView: 3,
+      spaceBetween: 20,
+      // Disable loop
+      loop: false,
+      // Faster speed for track slider to ensure it keeps up with main slider
+      speed: 100, // Reduced from 200 to 100
+      // Disable autoplay on track slider
+      autoplay: false,
+      // Enable smooth transitions between slides
+      effect: 'slide',
+      // Disable touch/swipe controls
+      allowTouchMove: false,
+      // Important: Remove slidesPerGroup to prevent grouping
+      // Start at the next slide (offset by 1)
+      initialSlide: 1,
+      // Allow sliding beyond the end
+      allowSlideNext: true,
+      // Add fixed space after the last slide
+      slidesOffsetAfter: trackSliderContainer.offsetWidth,
+      // Responsive breakpoints
+      breakpoints: {
+        0: {
+          slidesPerView: 1.5,
+          spaceBetween: 10
+        },
+        480: {
+          slidesPerView: 2,
+          spaceBetween: 15
+        },
+        768: {
+          slidesPerView: 1,
+          spaceBetween: 15
+        },
+        992: {
+          slidesPerView: 2.5,
+          spaceBetween: 20
+        }
+      }
+    });
+    
+    // Add click functionality to track slider slides
+    trackSliderElement.querySelectorAll('.swiper-slide').forEach(function(slide, index) {
+      slide.addEventListener('click', function() {
+        // Use slideTo instead of slideToLoop since loop is disabled
+        mainSwiper.slideTo(index);
+      });
+    });
+    
+    // Initial arrow state update
+    updateArrowStates(mainSwiper, prevButton, nextButton);
+    
+    if (prevButton) {
+      prevButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Move main slider back one slide
+        if (mainSwiper.activeIndex > 0) {
+          mainSwiper.slideTo(mainSwiper.activeIndex - 1);
+        }
+      });
+    }
+    
+    if (nextButton) {
+      nextButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Move main slider forward one slide
+        if (mainSwiper.activeIndex < mainSwiper.slides.length - 1) {
+          mainSwiper.slideTo(mainSwiper.activeIndex + 1);
+        }
+      });
+    }
+  });
+}
+
+// Initialize all functions when DOM is loaded
+window.addEventListener("DOMContentLoaded", () => {
+  
+    // Initialize sliders
+  initHeroSliders();
+  initTeamSliders();
+
+  // Initialize UI components
+  positionVerticalLine();
+  resizeVerticalLine();
+  initVerticalLine();
+  initSubAccordions();
+  initScrollExperience();
+  imageSrcSetFix();
+  initImageCards();
+  initTabContainers();
+  initializeMenu();
+  
+  // Initialize keyboard navigation detection
+  detectKeyboardNavigation();
+  
+  // Initialize animations
+  fadeUpOnScroll();
+  fadeSideOnScroll();
+  growSideOnScroll();
+  staggerAnimateOnScroll();
+  fadeInOnScroll();
+  countUpOnScroll();
+});
 
 
