@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             crossFade: true
           },
           
+          allowTouchMove: false,
           // Show only one slide at a time
           slidesPerView: 1,
           

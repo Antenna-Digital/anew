@@ -724,6 +724,33 @@ html.lenis {
   }
 }
 
+
+.main-menu_action-links {
+    margin-top: auto;
+}
+
+.main-menu_action-links div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.main-menu_primary {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Fix for arrow orientation if needed */
+.arrow-fixed {
+  transform: rotate(0deg) !important; /* Force correct initial orientation */
+}
+
+.main-menu_item.active .arrow-fixed {
+  transform: rotate(180deg) !important; /* Force correct active orientation */
+}
+
+.main-menu_action-link { display: flex; align-items: center; gap: .25rem; }
+
 /* Focus styles for keyboard navigation - Fixed */
 .main-menu_link-text:focus,
 .main-menu_submenu-toggle:focus,
@@ -756,6 +783,16 @@ body:not(.keyboard-nav) .main-menu *:focus {
 /* Show the menu items directly in design mode */
 .wf-design-mode [data-show-menu="true"] .main-menu_item {
   display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  margin-bottom: 20px !important;
+  background-color: rgba(15, 26, 42, 0.9) !important;
+  padding: 15px !important;
+  border-radius: 8px !important;
+}
+
+.wf-design-mode [data-show-menu="true"] .main-menu_action-links {
+display: block !important;
   opacity: 1 !important;
   visibility: visible !important;
   margin-bottom: 20px !important;
@@ -843,29 +880,3 @@ body:not(.keyboard-nav) .main-menu *:focus {
   font-weight: bold !important;
   margin-bottom: 10px !important;
 }
-
-.main-menu_action-links {
-    margin-top: auto;
-}
-
-.main-menu_action-links div {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.main-menu_primary {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Fix for arrow orientation if needed */
-.arrow-fixed {
-  transform: rotate(0deg) !important; /* Force correct initial orientation */
-}
-
-.main-menu_item.active .arrow-fixed {
-  transform: rotate(180deg) !important; /* Force correct active orientation */
-}
-
-.main-menu_action-link { display: flex; align-items: center; gap: .25rem; }
