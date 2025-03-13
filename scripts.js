@@ -1568,6 +1568,72 @@ function initTeamSliders() {
   });
 }
 
+function initMapFilters() {
+  const mapContainers = document.querySelectorAll('.map');
+
+  mapContainers.forEach(mapContainer => {
+    const mapBase = mapContainer.querySelector('.map_base');
+    const mapLayersContainer = mapContainer.querySelector('.map-layers');
+    const mapFiltersContainer = mapContainer.querySelector('.map-filters');
+
+    if (!mapBase || !mapLayersContainer || !mapFiltersContainer) {
+      console.warn('Required map elements not found in map container.');
+      return;
+    }
+
+    const mapLayers = Array.from(mapLayersContainer.querySelectorAll('.map-layer'));
+    const mapFilterItems = Array.from(mapFiltersContainer.querySelectorAll('.map-filter_item'));
+
+    // Initially show all layers by default
+    mapLayers.forEach(layer => {
+      layer.style.opacity = '1';
+      layer.classList.add('active-filter');
+    });
+
+    // Add active class to the first filter item by default
+    if (mapFilterItems.length > 0) {
+      mapFilterItems[0].classList.add('active-filter');
+    }
+
+    mapFilterItems.forEach(filterItem => {
+      filterItem.addEventListener('click', function() {
+        const filterValue = this.dataset.mapFilter;
+
+        // Deactivate all layers
+        mapLayers.forEach(layer => {
+          layer.classList.remove('active-filter');
+          layer.style.opacity = '0';
+        });
+
+        // Activate the selected layer(s)
+        if (filterValue === 'all') {
+          // Show all layers
+          mapLayers.forEach(layer => {
+            layer.classList.add('active-filter');
+            layer.style.opacity = '1';
+          });
+        } else {
+          // Show only the layer(s) matching the filter value
+          mapLayers.forEach(layer => {
+            if (layer.dataset.mapLayer === filterValue) {
+              layer.classList.add('active-filter');
+              layer.style.opacity = '1';
+            }
+          });
+        }
+
+        // Remove active class from all filter items
+        mapFilterItems.forEach(item => {
+          item.classList.remove('active-filter');
+        });
+
+        // Add active class to the clicked filter item
+        this.classList.add('active-filter');
+      });
+    });
+  });
+}
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
@@ -1596,6 +1662,9 @@ window.addEventListener("DOMContentLoaded", () => {
   staggerAnimateOnScroll();
   fadeInOnScroll();
   countUpOnScroll();
+
+  // Initialize map filters
+  initMapFilters();
 });
 
 
