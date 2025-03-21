@@ -207,6 +207,15 @@ margin: 8px 0 24px
     line-height: 1.75;
   }
 
+  .prose sup {
+    font-size: 0.875rem;
+    color: var(--swatch--sunstone-100);
+  }
+
+  .prose sup a {
+    color: var(--swatch--sunstone-100);
+  }
+
   .prose h1,
   .prose h2,
   .prose h3,
