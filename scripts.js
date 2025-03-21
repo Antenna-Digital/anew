@@ -1634,9 +1634,99 @@ function initMapFilters() {
   });
 }
 
+// Function to truncate text and update the "Read More" link
+function truncateText() {
+  const containers = document.querySelectorAll('.js-read-more');
+  console.log('Found .js-read-more containers:', containers.length);
+
+  containers.forEach(container => {
+    console.log('Processing container:', container);
+
+    // The container *is* the richtext element
+    const richtextElement = container;
+    console.log('richtextElement:', richtextElement);
+
+    // Find the read-more-link within the same parent div
+    const readMoreLink = container.nextElementSibling;
+    console.log('readMoreLink:', readMoreLink);
+
+    if (!richtextElement) {
+      console.warn('richtextElement not found (should not happen):', container);
+      return;
+    }
+
+    if (!readMoreLink) {
+      console.warn('readMoreLink not found as next sibling:', container);
+      return;
+    }
+
+    // Get all text from inside the w-richtext
+    let originalText = '';
+    for (const node of richtextElement.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        originalText += node.textContent;
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        originalText += node.textContent;
+      }
+    }
+    originalText = originalText.trim();
+
+    console.log('originalText:', originalText);
+
+    const truncatedText = originalText.length > 80 ? originalText.substring(0, 80) + '...' : originalText;
+    console.log('truncatedText:', truncatedText);
+
+    richtextElement.textContent = truncatedText;
+    readMoreLink.textContent = 'Read More';
+    console.log('Text truncated and link updated for container:', container);
+  });
+  console.log('truncateText function complete');
+}
+
+console.log('truncateText');
+
+function initReadMore() {
+  const containers = document.querySelectorAll('.js-read-more');
+
+  containers.forEach(container => {
+    const shortBio = container.querySelector('.js-read-more-short-bio');
+    const bio = container.querySelector('.js-read-more-bio');
+    const link = container.querySelector('.js-read-more-link');
+
+    if (!shortBio || !bio || !link) {
+      console.warn('Missing required elements in .js-read-more container:', container);
+      return;
+    }
+
+    // Initially hide the full bio
+    bio.style.display = 'none';
+
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      const isExpanded = bio.style.display === 'block';
+
+      if (isExpanded) {
+        // Collapse
+        shortBio.style.display = 'block';
+        bio.style.display = 'none';
+        link.textContent = 'Read More';
+      } else {
+        // Expand
+        shortBio.style.display = 'none';
+        bio.style.display = 'block';
+        link.textContent = 'Read Less';
+      }
+    });
+  });
+}
+
+console.log('initReadMore');
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
+
     // Initialize sliders
   initHeroSliders();
   initTeamSliders();
@@ -1651,6 +1741,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initImageCards();
   initTabContainers();
   initializeMenu();
+  initReadMore();
   
   // Initialize keyboard navigation detection
   detectKeyboardNavigation();
