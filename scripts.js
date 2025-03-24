@@ -259,100 +259,44 @@ function initSubAccordions() {
   // Sub-accordion functionality
   const subAccordionLists = document.querySelectorAll('.sub-accordion_list');
   
-  // Function to update the accordion image based on active sub-accordion
-  function updateAccordionImage(subAccordion) {
-    if (!subAccordion) return;
-    
-    // Get the parent accordion item
-    const accordionItem = subAccordion.closest('.accordion_item');
-    if (!accordionItem) return;
-    
-    // Get the sub-accordion image and the accordion image container
-    const subAccordionImage = subAccordion.querySelector('.sub-accordion_image');
-    const accordionImageContainer = accordionItem.querySelector('.accodion_image-container .g_visual_wrap');
-    
-    if (subAccordionImage && accordionImageContainer) {
-      // Get the source image
-      const sourceImg = subAccordionImage;
-      // Get the current target image
-      const currentTargetImg = accordionImageContainer.querySelector('img.g_visual_img');
-      
-      if (sourceImg && currentTargetImg) {
-        // Get the src, srcset and sizes from the source image
-        const sourceSrc = sourceImg.getAttribute('src');
-        const sourceSrcset = sourceImg.getAttribute('srcset');
-        const sourceSizes = sourceImg.getAttribute('sizes');
-        const sourceAlt = sourceImg.getAttribute('alt') || '';
-        
-        // Create a new image element for the fade transition
-        const newImage = document.createElement('img');
-        newImage.className = 'g_visual_img u-cover-absolute transition-image';
-        newImage.setAttribute('src', sourceSrc);
-        if (sourceSrcset) newImage.setAttribute('srcset', sourceSrcset);
-        if (sourceSizes) newImage.setAttribute('sizes', sourceSizes);
-        newImage.setAttribute('alt', sourceAlt);
-        
-        // Style for the fade transition - set initial opacity to 0
-        newImage.style.opacity = '0';
-        newImage.style.zIndex = '2'; // Place above the current image
-        
-        // Preload the image before showing it to prevent flickering
-        const preloadImage = new Image();
-        preloadImage.onload = () => {
-          // Once preloaded, add the new image to the container
-          accordionImageContainer.appendChild(newImage);
-          
-          // Force a reflow to ensure the transition works
-          void newImage.offsetWidth;
-          
-          // Add the transition property after the element is in the DOM
-          newImage.style.transition = 'opacity 0.5s ease';
-          
-          // Use requestAnimationFrame to ensure the browser has rendered the initial state
-          requestAnimationFrame(() => {
-            // Fade in the new image in the next frame
-            requestAnimationFrame(() => {
-              newImage.style.opacity = '1';
-            });
-          });
-          
-          // Update the original image attributes behind the scenes
-          currentTargetImg.setAttribute('src', sourceSrc);
-          if (sourceSrcset) currentTargetImg.setAttribute('srcset', sourceSrcset);
-          if (sourceSizes) currentTargetImg.setAttribute('sizes', sourceSizes);
-          currentTargetImg.setAttribute('alt', sourceAlt);
-          
-          // After the transition completes, remove the transition image
-          setTimeout(() => {
-            // Only remove if it's still in the DOM
-            if (newImage.parentNode) {
-              accordionImageContainer.removeChild(newImage);
-            }
-          }, 600); // Slightly longer than the transition to ensure it's complete
-        };
-        
-        // Start preloading
-        preloadImage.src = sourceSrc;
-      }
-    }
-  }
-  
   // Only set up sub-accordion functionality if elements exist
   if (subAccordionLists.length > 0) {
-    // Open the first sub-accordion in each list by default
+    // Handle each accordion list
     subAccordionLists.forEach(list => {
       const subAccordions = list.querySelectorAll('.sub-accordion');
-      if (subAccordions.length > 0) {
-        // Add active class to first sub-accordion
-        subAccordions[0].classList.add('active');
-        // Show its content
-        const firstContent = subAccordions[0].querySelector('.sub-accordion_content');
-        if (firstContent) {
-          firstContent.style.display = 'block';
-        }
-        
-        // Update the accordion image with the first sub-accordion's image
-        updateAccordionImage(subAccordions[0]);
+      if (subAccordions.length === 0) return;
+      
+      // Get the accordion container
+      const accordionItem = list.closest('.accordion_item');
+      if (!accordionItem) return;
+      
+      const mainImageContainer = accordionItem.querySelector('.accodion_image-container');
+      if (!mainImageContainer) return;
+      
+      const mainImage = mainImageContainer.querySelector('.g_visual_wrap img.g_visual_img');
+      if (!mainImage) return;
+      
+      // IMMEDIATE ACTION: Set the first image to the main container
+      const firstSubAccordion = subAccordions[0];
+      const firstImage = firstSubAccordion.querySelector('.sub-accordion_content img.sub-accordion_image');
+      if (firstImage) {
+        mainImage.src = firstImage.src;
+        if (firstImage.srcset) mainImage.srcset = firstImage.srcset;
+        if (firstImage.sizes) mainImage.sizes = firstImage.sizes;
+        mainImage.alt = firstImage.alt || '';
+      }
+      
+      // Find active accordion or use first one
+      let activeAccordion = list.querySelector('.sub-accordion.active');
+      if (!activeAccordion) {
+        activeAccordion = subAccordions[0];
+        activeAccordion.classList.add('active');
+      }
+      
+      // Show its content
+      const activeContent = activeAccordion.querySelector('.sub-accordion_content');
+      if (activeContent) {
+        activeContent.style.display = 'block';
       }
       
       // Add click event listeners to all sub-accordion headers in this list
@@ -362,6 +306,9 @@ function initSubAccordions() {
           const parentAccordion = this.closest('.sub-accordion');
           const content = parentAccordion.querySelector('.sub-accordion_content');
           const isActive = parentAccordion.classList.contains('active');
+          
+          // If this sub-accordion is already active, don't do anything (prevents closing all)
+          if (isActive) return;
           
           // Close all sub-accordions in this list
           const allSubAccordions = list.querySelectorAll('.sub-accordion');
@@ -373,15 +320,19 @@ function initSubAccordions() {
             }
           });
           
-          // If the clicked accordion wasn't active, open it
-          if (!isActive) {
-            parentAccordion.classList.add('active');
-            if (content) {
-              content.style.display = 'block';
-            }
-            
-            // Update the accordion image with this sub-accordion's image
-            updateAccordionImage(parentAccordion);
+          // Open the clicked accordion
+          parentAccordion.classList.add('active');
+          if (content) {
+            content.style.display = 'block';
+          }
+          
+          // Get the sub-accordion image and update the main image
+          const subImage = content.querySelector('img.sub-accordion_image');
+          if (subImage && mainImage) {
+            mainImage.src = subImage.src;
+            if (subImage.srcset) mainImage.srcset = subImage.srcset;
+            if (subImage.sizes) mainImage.sizes = subImage.sizes;
+            mainImage.alt = subImage.alt || '';
           }
         });
       });

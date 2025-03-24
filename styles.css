@@ -25,6 +25,10 @@
   opacity: 1 !important;
 }
 
+.wf-design-mode .accordion-scroll {
+  position: relative !important;
+}
+
 /* Disable Swiper functionality in the Webflow designer */
 .wf-design-mode .swiper-wrapper {
   transform: none !important;
