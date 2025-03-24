@@ -54,6 +54,13 @@
   display: block !important;
 }
 
+/* Modified scroll experience container - removed scroll jacking */
+.scroll-experience-container {
+  position: relative;
+  height: auto;
+  display: block;
+}
+
 .sub-accordion_content {
   display: none;
 }
@@ -83,12 +90,12 @@
 }
 
 .accordion_item .accordion_content {
-    height: 0;
-    overflow: hidden;
-    opacity: 0;
+    height: auto; /* Changed from 0 to auto to show content by default */
+    overflow: visible; /* Changed from hidden to visible */
+    opacity: 1; /* Changed from 0 to 1 */
     transition: all 0.3s ease-in-out;
-    padding-bottom: 0;
-    padding-top: 0;
+    padding-bottom: var(--space--md); /* Added padding */
+    padding-top: var(--section-space--small); /* Added padding */
 }
 
 .wf-design-mode .scroll-experience-container {

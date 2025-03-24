@@ -290,111 +290,6 @@ function initSubAccordions() {
   }
 }
 
-function initScrollExperience() {
-  // GSAP ScrollTrigger Pin Section - only initialize if elements exist
-  const scrollExperienceContainer = document.querySelector('.scroll-experience-container');
-  const accordionItems = document.querySelectorAll('.accordion_item');
-  
-  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined' && scrollExperienceContainer && accordionItems.length > 0) {
-    
-    // Set first accordion item as active on page load
-    accordionItems[0].classList.add('active');
-
-    // Main container ScrollTrigger with improved snap functionality
-    ScrollTrigger.create({
-      trigger: ".scroll-experience-container",
-      pin: true,
-      start: "top top",
-      end: () => `+=${accordionItems.length * 100}%`, // Dynamic end point based on number of items
-      pinSpacing: true,
-      snap: {
-        snapTo: (value, self) => {
-          // Create snap points at equal intervals
-          const snapPoints = [];
-          for (let i = 0; i <= accordionItems.length - 1; i++) {
-            snapPoints.push(i / (accordionItems.length - 1));
-          }
-          
-          // Find the closest snap point
-          let closest = snapPoints.reduce((prev, curr) => {
-            return (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
-          });
-          
-          return closest;
-        },
-        duration: {min: 0.2, max: 0.3},
-        delay: 0.1,
-        ease: "power1.inOut"
-      }
-    });
-
-    // Create a single ScrollTrigger to handle all accordion items
-    ScrollTrigger.create({
-      trigger: ".scroll-experience-container",
-      start: "top top",
-      end: () => `+=${accordionItems.length * 100}%`,
-      markers: false,
-      onUpdate: self => {
-        // Calculate which item should be active based on scroll progress
-        const progress = self.progress;
-        const itemIndex = Math.round(progress * (accordionItems.length - 1));
-        
-        // Deactivate all items
-        accordionItems.forEach(item => item.classList.remove('active'));
-        
-        // Activate the current item
-        if (accordionItems[itemIndex]) {
-          accordionItems[itemIndex].classList.add('active');
-        }
-      }
-    });
-
-    // Add click navigation for accordion buttons
-    const accordionButtons = document.querySelectorAll('.accordion_button-click');
-
-    if (accordionButtons.length > 0) {
-      accordionButtons.forEach((button) => {
-        button.addEventListener('click', function() {
-          // Find the parent accordion item of this button
-          const parentAccordion = this.closest('.accordion_item');
-          
-          // Find the index of this accordion item in the collection
-          const targetIndex = Array.from(accordionItems).indexOf(parentAccordion);
-          
-          // Only proceed if we found a valid index
-          if (targetIndex !== -1) {
-            // Get the container and its ScrollTrigger instances
-            const container = document.querySelector('.scroll-experience-container');
-            
-            // Find the main ScrollTrigger instance with snap functionality
-            const mainST = ScrollTrigger.getAll().find(instance => 
-              instance.vars.trigger === container || 
-              instance.vars.trigger === ".scroll-experience-container" && 
-              instance.vars.snap
-            );
-            
-            if (mainST) {
-              // Calculate the exact progress point for this accordion
-              const exactProgress = targetIndex / (accordionItems.length - 1);
-              
-              // Use ScrollTrigger's scroll method to precisely navigate to the target position
-              mainST.scroll(mainST.start + (exactProgress * (mainST.end - mainST.start)));
-              
-              // Force the snap to happen immediately
-              ScrollTrigger.update();
-              
-              // Activate the target accordion immediately for better UX
-              accordionItems.forEach((item, i) => {
-                item.classList.toggle('active', i === targetIndex);
-              });
-            }
-          }
-        });
-      });
-    }
-  }
-}
-
 function imageSrcSetFix() {
 // Handle improperly loaded srcset size for responsive images
 var images = document.getElementsByTagName("img");
@@ -1736,7 +1631,7 @@ window.addEventListener("DOMContentLoaded", () => {
   resizeVerticalLine();
   initVerticalLine();
   initSubAccordions();
-  initScrollExperience();
+
   imageSrcSetFix();
   initImageCards();
   initTabContainers();
