@@ -48,6 +48,8 @@
   z-index: 1000;
 }
 
+.hero-heading * { color: black !important; }
+
 
 /* Fix for misspelled wrapper class if it exists */
 .wf-design-mode .swipper-wrapper {

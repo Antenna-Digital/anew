@@ -55,21 +55,23 @@ function initHeroLine() {
 // Only set up vertical line positioning if the elements exist
 const verticalLine = document.querySelector('.vertical-line');
 const heroButtons = document.querySelector('.home-hero_buttons');
-if (verticalLine && heroButtons) {
-  // Position on load
-  positionHeroLine();
-  
-  // Try multiple times to ensure correct positioning
-  setTimeout(positionHeroLine, 100);
-  setTimeout(positionHeroLine, 500);
-  setTimeout(positionHeroLine, 1000);
-  
-  // Reposition on window resize
-  window.addEventListener('resize', positionHeroLine);
-  
-  // Also position after window fully loads (all resources including images)
-  window.addEventListener('load', positionHeroLine);
-}
+const homeHero = document.querySelector('.home-hero');
+
+if (!verticalLine || !heroButtons || !homeHero) return;
+
+// Position on load
+positionHeroLine();
+
+// Try multiple times to ensure correct positioning
+setTimeout(positionHeroLine, 100);
+setTimeout(positionHeroLine, 500);
+setTimeout(positionHeroLine, 1000);
+
+// Reposition on window resize
+window.addEventListener('resize', positionHeroLine);
+
+// Also position after window fully loads (all resources including images)
+window.addEventListener('load', positionHeroLine);
 }
 
 // Function to create and position the connecting line between split-CTA graphics
@@ -82,7 +84,16 @@ function createConnectingLine() {
     // Only proceed if all required elements exist
     if (!leftGraphic || !rightGraphic || !splitCtaContainer) {
         console.warn('Split CTA: Missing required elements for connecting line');
-        return;
+        return false;
+    }
+    
+    // Check if the elements are actually visible and have dimensions
+    const leftRect = leftGraphic.getBoundingClientRect();
+    const rightRect = rightGraphic.getBoundingClientRect();
+    
+    if (leftRect.width === 0 || leftRect.height === 0 || rightRect.width === 0 || rightRect.height === 0) {
+        console.warn('Split CTA: Graphics have zero dimensions, aborting line creation');
+        return false;
     }
     
     // Check if the line already exists, remove it if it does to prevent duplicates
@@ -103,8 +114,6 @@ function createConnectingLine() {
     svg.style.zIndex = '1'; // Place it above other elements if needed
     
     // Get the positions of the graphics relative to the split-cta container
-    const leftRect = leftGraphic.getBoundingClientRect();
-    const rightRect = rightGraphic.getBoundingClientRect();
     const containerRect = splitCtaContainer.getBoundingClientRect();
     
     // For debugging
@@ -171,27 +180,79 @@ function createConnectingLine() {
     
     // Add the SVG to the split-cta container
     splitCtaContainer.appendChild(svg);
+    
+    // Return true to indicate successful creation
+    return true;
 }
       
 // Renamed function to properly reflect what it does
 function initSplitCtaConnectingLine() {
   // Only set up split-CTA connecting line if elements exist
   const splitCtaElements = document.querySelector('.split-cta');
-  if (splitCtaElements) {
-    // Initial creation with multiple attempts
+  if (!splitCtaElements) return;
+  
+  console.log('Split CTA: Initializing connecting line');
+  
+  // Initial creation attempt
+  createConnectingLine();
+  
+  // Try a few more times with delays to catch late-loading elements
+  setTimeout(createConnectingLine, 500);
+  setTimeout(createConnectingLine, 1500);
+  setTimeout(createConnectingLine, 3000);
+  
+  // Also try when window fully loads (all resources including images)
+  window.addEventListener('load', () => {
+    console.log('Split CTA: Recreating on window.load');
     createConnectingLine();
-    
-    // Try again after delays to ensure proper positioning
     setTimeout(createConnectingLine, 500);
-    setTimeout(createConnectingLine, 1500);
-    setTimeout(createConnectingLine, 3000);
+  });
+  
+  // MutationObserver to detect any changes to the DOM structure
+  // This helps with dynamic content that might affect the positioning
+  let isUpdatingLine = false; // Flag to prevent recursion
+  
+  const observer = new MutationObserver((mutations) => {
+    // Skip if we're currently updating the line
+    if (isUpdatingLine) return;
     
-    // Also try when window fully loads
-    window.addEventListener('load', createConnectingLine);
+    // Check if the mutations are just from our line
+    const isSelfUpdate = mutations.every(mutation => {
+      return mutation.target.classList && 
+             (mutation.target.classList.contains('split-cta-connecting-line') || 
+              mutation.target === document.querySelector('.split-cta-connecting-line'));
+    });
     
-    // Update immediately on resize without debounce for responsiveness
-    window.addEventListener('resize', createConnectingLine);
-  }
+    if (!isSelfUpdate) {
+      // Set flag to prevent recursive updates
+      isUpdatingLine = true;
+      createConnectingLine();
+      // Reset flag after a small delay to ensure DOM updates are complete
+      setTimeout(() => {
+        isUpdatingLine = false;
+      }, 50);
+    }
+  });
+  
+  // Start observing the split-cta container for DOM changes
+  observer.observe(splitCtaElements, {
+    childList: true,
+    subtree: true,
+    attributes: true
+  });
+  
+  // Update on window resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    // Debounce to avoid too many calls during resize
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(createConnectingLine, 100);
+  });
+  
+  // Update after orientation change on mobile
+  window.addEventListener('orientationchange', () => {
+    setTimeout(createConnectingLine, 300);
+  });
 }
 
 function initSubAccordions() {
