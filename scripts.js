@@ -30,7 +30,7 @@ function initHeroSliders() {
   }
 }
 //Position the vertical line
-function positionVerticalLine() {
+function positionHeroLine() {
 const verticalLine = document.querySelector('.vertical-line');
 const heroButtons = document.querySelector('.home-hero_buttons');
 const homeHero = document.querySelector('.home-hero');
@@ -49,53 +49,26 @@ if (verticalLine && heroButtons && homeHero) {
     verticalLine.style.top = `${positionFromHeroTop}px`;
     verticalLine.style.position = 'absolute';
     verticalLine.style.transform = 'translateY(-50%)'; // Center the line itself
-    
-    // Log position data for debugging if needed
-    // console.log('Positioned vertical line at:', positionFromHeroTop, 'px');
 }
 }
-
-// Watch for changes that might affect vertical line position
-function setupVerticalLineObserver() {
-    const homeHero = document.querySelector('.home-hero');
-    if (!homeHero) return;
-    
-    // Create observer to watch for changes to the hero section
-    const observer = new MutationObserver((mutations) => {
-        // Reposition the vertical line when mutations occur
-        positionVerticalLine();
-    });
-    
-    // Start observing the hero section for DOM changes
-    observer.observe(homeHero, { 
-        attributes: true, 
-        childList: true, 
-        subtree: true,
-        characterData: true
-    });
-}
-
-function resizeVerticalLine() {
+function initHeroLine() {
 // Only set up vertical line positioning if the elements exist
 const verticalLine = document.querySelector('.vertical-line');
 const heroButtons = document.querySelector('.home-hero_buttons');
 if (verticalLine && heroButtons) {
   // Position on load
-  positionVerticalLine();
+  positionHeroLine();
   
   // Try multiple times to ensure correct positioning
-  setTimeout(positionVerticalLine, 100);
-  setTimeout(positionVerticalLine, 500);
-  setTimeout(positionVerticalLine, 1000);
+  setTimeout(positionHeroLine, 100);
+  setTimeout(positionHeroLine, 500);
+  setTimeout(positionHeroLine, 1000);
   
   // Reposition on window resize
-  window.addEventListener('resize', positionVerticalLine);
+  window.addEventListener('resize', positionHeroLine);
   
   // Also position after window fully loads (all resources including images)
-  window.addEventListener('load', positionVerticalLine);
-  
-  // Set up mutation observer to catch any DOM changes
-  setupVerticalLineObserver();
+  window.addEventListener('load', positionHeroLine);
 }
 }
 
@@ -108,6 +81,7 @@ function createConnectingLine() {
     
     // Only proceed if all required elements exist
     if (!leftGraphic || !rightGraphic || !splitCtaContainer) {
+        console.warn('Split CTA: Missing required elements for connecting line');
         return;
     }
     
@@ -133,25 +107,51 @@ function createConnectingLine() {
     const rightRect = rightGraphic.getBoundingClientRect();
     const containerRect = splitCtaContainer.getBoundingClientRect();
     
+    // For debugging
+    console.log('Split CTA: Left graphic position', {
+        top: leftRect.top - containerRect.top,
+        left: leftRect.left - containerRect.left,
+        right: leftRect.right - containerRect.left,
+        bottom: leftRect.bottom - containerRect.top,
+        height: leftRect.height,
+        width: leftRect.width
+    });
+    
+    console.log('Split CTA: Right graphic position', {
+        top: rightRect.top - containerRect.top,
+        left: rightRect.left - containerRect.left,
+        right: rightRect.right - containerRect.left,
+        bottom: rightRect.bottom - containerRect.top,
+        height: rightRect.height,
+        width: rightRect.width
+    });
+    
     // Check if we're on a mobile/tablet screen (991px or less)
     const isMobile = window.innerWidth <= 991;
+    console.log('Split CTA: Mobile layout?', isMobile);
     
     let startX, startY, endX, endY;
     
     if (isMobile) {
-        // For mobile: bottom middle of left graphic to top middle of right graphic
+        // For mobile: connect bottom middle of left graphic to top middle of right graphic
         startX = leftRect.left + (leftRect.width / 2) - containerRect.left;
         startY = leftRect.bottom - containerRect.top;
         
         endX = rightRect.left + (rightRect.width / 2) - containerRect.left;
         endY = rightRect.top - containerRect.top;
     } else {
-        // For desktop: middle right of left graphic to middle left of right graphic
+        // For desktop: connect vertically centered points of both graphics
+        // Calculate the exact vertical centers of both graphics
+        const leftCenterY = leftRect.top + (leftRect.height / 2) - containerRect.top;
+        const rightCenterY = rightRect.top + (rightRect.height / 2) - containerRect.top;
+        
         startX = leftRect.right - containerRect.left;
-        startY = containerRect.height / 2; // Center of container
+        startY = leftCenterY; // Vertical center of left graphic
         
         endX = rightRect.left - containerRect.left;
-        endY = containerRect.height / 2; // Center of container
+        endY = rightCenterY; // Vertical center of right graphic
+        
+        console.log('Split CTA: Using vertical centers -', { leftCenterY, rightCenterY });
     }
     
     // Create the line element
@@ -164,32 +164,35 @@ function createConnectingLine() {
     line.setAttribute('stroke-opacity', '0.75');
     line.setAttribute('stroke-width', '2');
     
+    console.log('Split CTA: Drawing line from', { x: startX, y: startY }, 'to', { x: endX, y: endY });
+    
     // Add the line to the SVG
     svg.appendChild(line);
     
     // Add the SVG to the split-cta container
     splitCtaContainer.appendChild(svg);
-    }
+}
       
-    function initVerticalLine() {
-      // Only set up split-CTA connecting line if elements exist
-      const splitCtaElements = document.querySelector('.split-cta');
-      if (splitCtaElements) {
-        // Initial creation with multiple attempts
-        createConnectingLine();
-        
-        // Try again after delays to ensure proper positioning
-        setTimeout(createConnectingLine, 500);
-        setTimeout(createConnectingLine, 1500);
-        setTimeout(createConnectingLine, 3000);
-        
-        // Also try when window fully loads
-        window.addEventListener('load', createConnectingLine);
-        
-        // Update immediately on resize without debounce for responsiveness
-        window.addEventListener('resize', createConnectingLine);
-      }
-    }
+// Renamed function to properly reflect what it does
+function initSplitCtaConnectingLine() {
+  // Only set up split-CTA connecting line if elements exist
+  const splitCtaElements = document.querySelector('.split-cta');
+  if (splitCtaElements) {
+    // Initial creation with multiple attempts
+    createConnectingLine();
+    
+    // Try again after delays to ensure proper positioning
+    setTimeout(createConnectingLine, 500);
+    setTimeout(createConnectingLine, 1500);
+    setTimeout(createConnectingLine, 3000);
+    
+    // Also try when window fully loads
+    window.addEventListener('load', createConnectingLine);
+    
+    // Update immediately on resize without debounce for responsiveness
+    window.addEventListener('resize', createConnectingLine);
+  }
+}
 
 function initSubAccordions() {
   // Sub-accordion functionality
@@ -1660,19 +1663,9 @@ window.addEventListener("DOMContentLoaded", () => {
   initHeroSliders();
   initTeamSliders();
 
-  // Run vertical line positioning ASAP using requestAnimationFrame for optimal timing
-  requestAnimationFrame(() => {
-    positionVerticalLine();
-    resizeVerticalLine();
-  });
-  
-  // Also initialize with a slight delay as backup
-  setTimeout(() => {
-    positionVerticalLine();
-    resizeVerticalLine();
-  }, 50);
-  
-  initVerticalLine();
+  // Initialize UI components
+  initHeroLine();
+  initSplitCtaConnectingLine();
   initSubAccordions();
 
   imageSrcSetFix();
@@ -1694,7 +1687,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Initialize map filters
   initMapFilters();
-  
 
 });
 
