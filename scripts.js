@@ -49,18 +49,53 @@ if (verticalLine && heroButtons && homeHero) {
     verticalLine.style.top = `${positionFromHeroTop}px`;
     verticalLine.style.position = 'absolute';
     verticalLine.style.transform = 'translateY(-50%)'; // Center the line itself
+    
+    // Log position data for debugging if needed
+    // console.log('Positioned vertical line at:', positionFromHeroTop, 'px');
 }
 }
+
+// Watch for changes that might affect vertical line position
+function setupVerticalLineObserver() {
+    const homeHero = document.querySelector('.home-hero');
+    if (!homeHero) return;
+    
+    // Create observer to watch for changes to the hero section
+    const observer = new MutationObserver((mutations) => {
+        // Reposition the vertical line when mutations occur
+        positionVerticalLine();
+    });
+    
+    // Start observing the hero section for DOM changes
+    observer.observe(homeHero, { 
+        attributes: true, 
+        childList: true, 
+        subtree: true,
+        characterData: true
+    });
+}
+
 function resizeVerticalLine() {
 // Only set up vertical line positioning if the elements exist
 const verticalLine = document.querySelector('.vertical-line');
 const heroButtons = document.querySelector('.home-hero_buttons');
 if (verticalLine && heroButtons) {
-// Position on load
-positionVerticalLine();
-
-// Reposition on window resize
-window.addEventListener('resize', positionVerticalLine);
+  // Position on load
+  positionVerticalLine();
+  
+  // Try multiple times to ensure correct positioning
+  setTimeout(positionVerticalLine, 100);
+  setTimeout(positionVerticalLine, 500);
+  setTimeout(positionVerticalLine, 1000);
+  
+  // Reposition on window resize
+  window.addEventListener('resize', positionVerticalLine);
+  
+  // Also position after window fully loads (all resources including images)
+  window.addEventListener('load', positionVerticalLine);
+  
+  // Set up mutation observer to catch any DOM changes
+  setupVerticalLineObserver();
 }
 }
 
@@ -1621,14 +1656,22 @@ console.log('initReadMore');
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
-
-    // Initialize sliders
+  // Initialize sliders
   initHeroSliders();
   initTeamSliders();
 
-  // Initialize UI components
-  positionVerticalLine();
-  resizeVerticalLine();
+  // Run vertical line positioning ASAP using requestAnimationFrame for optimal timing
+  requestAnimationFrame(() => {
+    positionVerticalLine();
+    resizeVerticalLine();
+  });
+  
+  // Also initialize with a slight delay as backup
+  setTimeout(() => {
+    positionVerticalLine();
+    resizeVerticalLine();
+  }, 50);
+  
   initVerticalLine();
   initSubAccordions();
 
@@ -1651,6 +1694,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Initialize map filters
   initMapFilters();
+  
+
 });
 
 
