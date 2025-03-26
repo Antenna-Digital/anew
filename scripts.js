@@ -1259,37 +1259,45 @@ function fadeInOnScroll() {
 }
 
 function countUpOnScroll() {
-  document.querySelectorAll("[data-g-tick-up]").forEach((element) => {
-    const targetNumber = parseFloat(element.dataset.gTickUp);
-    const randomDuration = Math.random() * (3 - 1) + 1;
-
-    // Determine decimal places from the target number
-    const decimalPlaces = (targetNumber.toString().split(".")[1] || "").length;
-
-    // Store the initial number for reference
-    element.innerText = targetNumber;
-
-    gsap.fromTo(
-      element,
-      {
-        innerText: 0,
-      },
-      {
-        innerText: targetNumber,
-        duration: randomDuration,
-        ease: "power1.out",
+  const countUpElements = document.querySelectorAll(".js-count-up");
+  
+  countUpElements.forEach((element) => {
+    // Get the text content and check if it's a number
+    const content = element.textContent.trim();
+    const targetNumber = parseFloat(content);
+    
+    // Only proceed if the content is a valid number
+    if (!isNaN(targetNumber)) {
+      // Determine decimal places from the target number
+      const decimalPlaces = (content.split(".")[1] || "").length;
+      
+      // Create a proxy object to animate
+      const counter = { value: 0 };
+      
+      // Create the animation
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: element,
           start: "top 80%",
-          toggleActions: "play none none none",
+          once: true
+        }
+      });
+      
+      tl.to(counter, {
+        value: targetNumber,
+        duration: 2,
+        ease: "power1.out",
+        onUpdate: function() {
+          element.textContent = counter.value.toFixed(decimalPlaces);
         },
-        onUpdate: function () {
-          const value = this.targets()[0].innerText;
-          // Format with the same number of decimal places as the target
-          element.innerText = parseFloat(value).toFixed(decimalPlaces);
-        },
-      }
-    );
+        onComplete: function() {
+          // Make sure the final value is exactly the original text
+          // to avoid any rounding issues
+          element.textContent = content;
+        }
+      });
+    }
+    // If it's not a number, we do nothing and leave the content as is
   });
 }
 
