@@ -236,7 +236,6 @@ margin: 8px 0 24px
   .prose h5,
   .prose h6 {
     color: var(--swatch--forge-900);
-    font-weight: 700;
     line-height: 1.2;
     margin-top: 2rem;
     margin-bottom: 1rem;
