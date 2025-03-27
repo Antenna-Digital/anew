@@ -67,14 +67,6 @@
   display: block;
 }
 
-.sub-accordion_content {
-  display: none;
-}
-
-.sub-accordion.active .sub-accordion_content {
-  display: block;
-}
-
 .sub-accordion_header {
   cursor: pointer;
 }
@@ -1032,3 +1024,35 @@ display: block !important;
 .js-read-more-bio {
   display: none;
 }
+
+/* Styles for scroll item active state */
+.sub-scroll_item_content-container {
+  transition: opacity 0.4s ease, transform 0.5s ease;
+  opacity: 0.2;
+  transform: scale(0.80) translateY(20px);
+  transition: ease all 0.3s;
+}
+
+.sub-scroll_item_content-container.active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sub-scroll_item_content-container:hover {
+  background-color: var(--swatch--glacier);
+}
+
+/* Image transition styles */
+.accodion_image-container .g_visual_img {
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+/* Make sure the image container has proper positioning for absolute elements */
+.accodion_image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+

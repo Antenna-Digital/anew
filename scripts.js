@@ -1356,6 +1356,143 @@ function initHeroSliders() {
   });
 }
 
+// Function to add active class to scroll items when they enter viewport
+function initSubScrollItemActiveClass() {
+  const scrollItems = document.querySelectorAll('.sub-scroll_item_content-container');
+  
+  if (scrollItems.length === 0) return;
+  
+  scrollItems.forEach((item) => {
+    ScrollTrigger.create({
+      trigger: item,
+      start: "top 70%", // Trigger when the top of the element is 30% into the viewport
+      end: "bottom 20%", // End when the bottom of the element is 20% from the top of the viewport
+      toggleClass: {
+        targets: item,
+        className: "active"
+      },
+      // For debugging:
+      // markers: true,
+      onEnter: () => {
+        console.log('ScrollItem entered view:', item);
+        updateMainImage(item);
+      },
+      onEnterBack: () => {
+        console.log('ScrollItem entered view backwards:', item);
+        updateMainImage(item);
+      }
+    });
+  });
+  
+  // Function to update the main accordion image
+  function updateMainImage(activeItem) {
+    // Find the parent scroll-item
+    const scrollItem = activeItem.closest('.scroll-item');
+    if (!scrollItem) return;
+    
+    // Get the image from the active sub-scroll item
+    const subScrollItemImage = activeItem.querySelector('.sub-scroll_item_image');
+    if (!subScrollItemImage) return;
+    
+    // Get the main image container
+    const mainImageContainer = scrollItem.querySelector('.accodion_image-container');
+    if (!mainImageContainer) return;
+    
+    // Get the main image element
+    const mainImage = mainImageContainer.querySelector('.g_visual_img');
+    if (!mainImage) return;
+    
+    // If it's the same image, don't do anything
+    if (mainImage.src === subScrollItemImage.src) return;
+    
+    // Check if we already have a temp image (in case of rapid scrolling)
+    const existingTempImage = mainImageContainer.querySelector('.temp-crossfade-image');
+    if (existingTempImage) {
+      existingTempImage.remove();
+    }
+    
+    // Create a temporary image element for the crossfade
+    const tempImage = document.createElement('img');
+    tempImage.classList.add('g_visual_img', 'u-cover-absolute', 'temp-crossfade-image');
+    tempImage.style.opacity = '0';
+    tempImage.style.position = 'absolute';
+    tempImage.style.top = '0';
+    tempImage.style.left = '0';
+    tempImage.style.width = '100%';
+    tempImage.style.height = '100%';
+    tempImage.style.objectFit = 'cover';
+    tempImage.style.zIndex = '2'; // Place above the current image
+    
+    // Set the new image source
+    tempImage.src = subScrollItemImage.src;
+    if (subScrollItemImage.srcset) tempImage.srcset = subScrollItemImage.srcset;
+    if (subScrollItemImage.sizes) tempImage.sizes = subScrollItemImage.sizes;
+    
+    // Add the temporary image to the container
+    mainImageContainer.appendChild(tempImage);
+    
+    // Load event handling - when the new image is fully loaded
+    tempImage.onload = function() {
+      // Ensure smooth transition
+      tempImage.style.transition = 'opacity 0.4s ease';
+      
+      // Fade in the new image
+      requestAnimationFrame(() => {
+        tempImage.style.opacity = '1';
+      });
+      
+      // Silently update the main image source while the temporary image is showing
+      // This ensures it's fully loaded when we remove the temporary image
+      mainImage.onload = function() {
+        // This will trigger when the main image finishes loading the new src
+        // We're now ready to remove the temp image (after fade transition completes)
+        setTimeout(() => {
+          // Fade out temp image very slowly to avoid any possible flicker
+          tempImage.style.transition = 'opacity 0.3s ease';
+          tempImage.style.opacity = '0';
+          
+          // Remove the temp image after it's fully faded out
+          setTimeout(() => {
+            tempImage.remove();
+          }, 400);
+        }, 200); // Small delay to ensure everything is stable
+      };
+      
+      // Update main image source silently in the background
+      mainImage.src = subScrollItemImage.src;
+      if (subScrollItemImage.srcset) mainImage.srcset = subScrollItemImage.srcset;
+      if (subScrollItemImage.sizes) mainImage.sizes = subScrollItemImage.sizes;
+      
+      // In case the onload doesn't fire (image already cached)
+      setTimeout(() => {
+        if (tempImage.parentNode) {
+          tempImage.style.transition = 'opacity 0.3s ease';
+          tempImage.style.opacity = '0';
+          
+          setTimeout(() => {
+            if (tempImage.parentNode) {
+              tempImage.remove();
+            }
+          }, 400);
+        }
+      }, 1000); // Safety fallback
+      
+      console.log('Crossfade transition in progress for:', subScrollItemImage.src);
+    };
+    
+    // Handle error case - if image fails to load
+    tempImage.onerror = function() {
+      console.error('Failed to load image:', subScrollItemImage.src);
+      tempImage.remove();
+      
+      // Update main image directly as fallback
+      mainImage.src = subScrollItemImage.src;
+      if (subScrollItemImage.srcset) mainImage.srcset = subScrollItemImage.srcset;
+      if (subScrollItemImage.sizes) mainImage.sizes = subScrollItemImage.sizes;
+    };
+  }
+}
+
 // Function to initialize team sliders
 function initTeamSliders() {
   // Find all team components on the page
@@ -1687,7 +1824,8 @@ window.addEventListener("DOMContentLoaded", () => {
   initHeroLine();
   initSplitCtaConnectingLine();
   initSubAccordions();
-
+  initSubScrollItemActiveClass();
+  
   imageSrcSetFix();
   initImageCards();
   initTabContainers();
