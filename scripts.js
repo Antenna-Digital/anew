@@ -1,5 +1,6 @@
-gsap.registerPlugin(ScrollTrigger);
+console.log('local scripts.js loaded');
 
+gsap.registerPlugin(ScrollTrigger);
 
 function initHeroSliders() {
   // Swiper slider initialization
@@ -631,24 +632,48 @@ document.querySelectorAll('.main-menu_close').forEach(button => {
 // Toggle submenu - Fixed to preserve secondary close button
 submenuToggles.forEach(toggle => {
     toggle.addEventListener('click', function() {
-    const menuItem = this.closest('.main-menu_item');
+    toggleSubmenu(this.closest('.main-menu_item'));
+    });
+});
+
+// Add click event to menu link text elements
+const menuLinkTexts = document.querySelectorAll('.main-menu_link-text');
+menuLinkTexts.forEach(linkText => {
+    // Check if this is a regular link or a submenu toggle
+    const menuItem = linkText.closest('.main-menu_item');
+    const hasSubmenu = menuItem && menuItem.querySelector('.main-menu_submenu');
     
-    if (menuItem) {
-        // Check if this item is already active
-        const isActive = menuItem.classList.contains('active');
-        
-        // Reset all other active items first
-        document.querySelectorAll('.main-menu_item.active').forEach(item => {
+    if (hasSubmenu) {
+        // If it has a submenu, make it toggle the submenu
+        linkText.addEventListener('click', function(e) {
+            // Prevent default only if it's not an actual link
+            if (!linkText.hasAttribute('href')) {
+                e.preventDefault();
+            }
+            toggleSubmenu(menuItem);
+        });
+    }
+});
+
+// Function to toggle submenu state
+function toggleSubmenu(menuItem) {
+    if (!menuItem) return;
+    
+    // Check if this item is already active
+    const isActive = menuItem.classList.contains('active');
+    
+    // Reset all other active items first
+    document.querySelectorAll('.main-menu_item.active').forEach(item => {
         if (item !== menuItem) {
             item.classList.remove('active');
         }
-        });
-        
-        // Toggle active state instead of always adding it
-        if (isActive) {
+    });
+    
+    // Toggle active state instead of always adding it
+    if (isActive) {
         menuItem.classList.remove('active');
         mainMenu.classList.remove('submenu-active');
-        } else {
+    } else {
         menuItem.classList.add('active');
         
         // Show the corresponding submenu in the secondary panel
@@ -695,29 +720,27 @@ submenuToggles.forEach(toggle => {
             
             // Handle back button click
             backButton.addEventListener('click', function() {
-            // Reset the menu to show only the primary panel
-            mainMenu.classList.remove('submenu-active');
-            
-            // Reset all active states to return arrows to default position
-            document.querySelectorAll('.main-menu_item.active').forEach(item => {
-                item.classList.remove('active');
-            });
+                // Reset the menu to show only the primary panel
+                mainMenu.classList.remove('submenu-active');
+                
+                // Reset all active states to return arrows to default position
+                document.querySelectorAll('.main-menu_item.active').forEach(item => {
+                    item.classList.remove('active');
+                });
             });
             
             // Handle close button click
             closeButton.addEventListener('click', function() {
-            mainMenu.classList.remove('active');
-            resetSubmenuState();
-            document.body.style.overflow = ''; // Restore scrolling
+                mainMenu.classList.remove('active');
+                resetSubmenuState();
+                document.body.style.overflow = ''; // Restore scrolling
             });
             
             // Add class to show submenu
             mainMenu.classList.add('submenu-active');
         }
-        }
     }
-    });
-});
+}
 
 // Function to reset submenu state
 function resetSubmenuState() {
