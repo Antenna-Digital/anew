@@ -1688,6 +1688,7 @@ function initMapFilters() {
     const mapBase = mapContainer.querySelector('.map_base');
     const mapLayersContainer = mapContainer.querySelector('.map-layers');
     const mapFiltersContainer = mapContainer.querySelector('.map-filters');
+    const clearFilterButton = mapContainer.querySelector('.map-filter_clear');
 
     if (!mapBase || !mapLayersContainer || !mapFiltersContainer) {
       console.warn('Required map elements not found in map container.');
@@ -1703,45 +1704,86 @@ function initMapFilters() {
       layer.classList.add('active-filter');
     });
 
-    // Add active class to the first filter item by default
-    if (mapFilterItems.length > 0) {
-      mapFilterItems[0].classList.add('active-filter');
+    // No active class on filter items initially
+    mapFilterItems.forEach(filterItem => {
+      filterItem.classList.remove('active-filter');
+    });
+
+    // Initially hide the clear filter button
+    if (clearFilterButton) {
+      clearFilterButton.style.display = 'none';
+    }
+
+    // Function to reset all filters
+    function resetFilters() {
+      // Remove active class from all filter items
+      mapFilterItems.forEach(item => {
+        item.classList.remove('active-filter');
+      });
+
+      // Show all layers
+      mapLayers.forEach(layer => {
+        layer.classList.add('active-filter');
+        layer.style.opacity = '1';
+      });
+
+      // Hide the clear filter button
+      if (clearFilterButton) {
+        clearFilterButton.style.display = 'none';
+      }
+    }
+
+    // Add click event to clear filter button
+    if (clearFilterButton) {
+      clearFilterButton.addEventListener('click', resetFilters);
     }
 
     mapFilterItems.forEach(filterItem => {
       filterItem.addEventListener('click', function() {
         const filterValue = this.dataset.mapFilter;
-
-        // Deactivate all layers
-        mapLayers.forEach(layer => {
-          layer.classList.remove('active-filter');
-          layer.style.opacity = '0';
-        });
-
-        // Activate the selected layer(s)
-        if (filterValue === 'all') {
-          // Show all layers
-          mapLayers.forEach(layer => {
-            layer.classList.add('active-filter');
-            layer.style.opacity = '1';
-          });
-        } else {
-          // Show only the layer(s) matching the filter value
-          mapLayers.forEach(layer => {
-            if (layer.dataset.mapLayer === filterValue) {
-              layer.classList.add('active-filter');
-              layer.style.opacity = '1';
-            }
-          });
-        }
-
-        // Remove active class from all filter items
+        const wasActive = this.classList.contains('active-filter');
+        
+        // First, remove active class from all filter items
         mapFilterItems.forEach(item => {
           item.classList.remove('active-filter');
         });
-
-        // Add active class to the clicked filter item
-        this.classList.add('active-filter');
+        
+        // If this filter wasn't already active, make it active
+        // If it was already active, we're effectively deselecting it
+        if (!wasActive) {
+          this.classList.add('active-filter');
+          
+          // Show the clear filter button
+          if (clearFilterButton) {
+            clearFilterButton.style.display = 'block';
+          }
+          
+          // Update layer visibility based on the selected filter
+          if (filterValue === 'all') {
+            // Show all layers
+            mapLayers.forEach(layer => {
+              layer.classList.add('active-filter');
+              layer.style.opacity = '1';
+            });
+          } else {
+            // Show only the layer matching the filter value
+            mapLayers.forEach(layer => {
+              const layerType = layer.dataset.mapLayer;
+              
+              if (layerType === filterValue) {
+                layer.classList.add('active-filter');
+                layer.style.opacity = '1';
+              } else {
+                layer.classList.remove('active-filter');
+                layer.style.opacity = '0';
+              }
+            });
+          }
+        } else {
+          // If this filter was already active and got clicked again,
+          // we're deselecting it, so reset to show all layers
+          resetFilters();
+        }
       });
     });
   });
