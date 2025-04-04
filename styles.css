@@ -1102,3 +1102,8 @@ display: block !important;
     min-height: 60vh;
   }
 }
+
+@media screen and (max-height: 900px) {
+  .steps_header,
+  .step { position: static; }
+}
