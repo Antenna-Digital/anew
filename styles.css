@@ -1107,3 +1107,37 @@ display: block !important;
   .steps_header,
   .step { position: static; }
 }
+
+/* Placeholder color for form elements */
+::placeholder,
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--swatch--anchor-100) !important;
+  opacity: 1; /* Firefox requires this to apply the color properly */
+}
+
+/* For older browsers that use different pseudo-elements */
+::-webkit-input-placeholder {
+  color: var(--swatch--anchor-100) !important;
+}
+
+::-moz-placeholder {
+  color: var(--swatch--anchor-100) !important;
+  opacity: 1; /* Firefox requires this */
+}
+
+:-ms-input-placeholder {
+  color: var(--swatch--anchor-100) !important;
+}
+
+:-moz-placeholder {
+  color: var(--swatch--anchor-100) !important;
+  opacity: 1; /* Firefox requires this */
+}
+
+/* For select elements with no value selected */
+select:invalid,
+select option:first-child {
+  color: var(--swatch--anchor-100) !important;
+}
