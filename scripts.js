@@ -1933,6 +1933,42 @@ function initReadMore() {
 
 console.log('initReadMore');
 
+function initSkipToMain() {
+  const skipToMainLink = document.querySelector('.skip-to-main');
+  const mainElement = document.querySelector('#main');
+  
+  if (!skipToMainLink || !mainElement) return;
+  
+  // Find the first section inside #main
+  const firstSection = mainElement.querySelector('section');
+  
+  if (!firstSection) {
+    console.warn('No section found inside #main for skip-to-main functionality');
+    return;
+  }
+  
+  // Add ID to the first section
+  firstSection.id = 'main-section';
+  
+  // Update the skip link href to point to the section ID
+  skipToMainLink.setAttribute('href', '#main-section');
+  
+  // When the section receives focus (after clicking the skip link)
+  firstSection.addEventListener('focus', function() {
+    // Add a small visual indicator that focus has moved
+    const originalOutline = this.style.outline;
+    this.style.outline = '2px solid #000';
+    
+    // Remove the outline after a short delay
+    setTimeout(() => {
+      this.style.outline = originalOutline;
+    }, 1500);
+  });
+  
+  // Make sure the section is focusable
+  firstSection.setAttribute('tabindex', '-1');
+}
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
@@ -1951,6 +1987,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initTabContainers();
   initializeMenu();
   initReadMore();
+  initSkipToMain();
   
   // Initialize keyboard navigation detection
   detectKeyboardNavigation();
