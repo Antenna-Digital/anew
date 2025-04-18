@@ -84,7 +84,7 @@ function createConnectingLine() {
     
     // Only proceed if all required elements exist
     if (!leftGraphic || !rightGraphic || !splitCtaContainer) {
-        console.warn('Split CTA: Missing required elements for connecting line');
+        // console.warn('Split CTA: Missing required elements for connecting line');
         return false;
     }
     
@@ -93,7 +93,7 @@ function createConnectingLine() {
     const rightRect = rightGraphic.getBoundingClientRect();
     
     if (leftRect.width === 0 || leftRect.height === 0 || rightRect.width === 0 || rightRect.height === 0) {
-        console.warn('Split CTA: Graphics have zero dimensions, aborting line creation');
+        // console.warn('Split CTA: Graphics have zero dimensions, aborting line creation');
         return false;
     }
     
@@ -118,27 +118,27 @@ function createConnectingLine() {
     const containerRect = splitCtaContainer.getBoundingClientRect();
     
     // For debugging
-    console.log('Split CTA: Left graphic position', {
-        top: leftRect.top - containerRect.top,
-        left: leftRect.left - containerRect.left,
-        right: leftRect.right - containerRect.left,
-        bottom: leftRect.bottom - containerRect.top,
-        height: leftRect.height,
-        width: leftRect.width
-    });
+    // console.log('Split CTA: Left graphic position', {
+    //     top: leftRect.top - containerRect.top,
+    //     left: leftRect.left - containerRect.left,
+    //     right: leftRect.right - containerRect.left,
+    //     bottom: leftRect.bottom - containerRect.top,
+    //     height: leftRect.height,
+    //     width: leftRect.width
+    // });
     
-    console.log('Split CTA: Right graphic position', {
-        top: rightRect.top - containerRect.top,
-        left: rightRect.left - containerRect.left,
-        right: rightRect.right - containerRect.left,
-        bottom: rightRect.bottom - containerRect.top,
-        height: rightRect.height,
-        width: rightRect.width
-    });
+    // console.log('Split CTA: Right graphic position', {
+    //     top: rightRect.top - containerRect.top,
+    //     left: rightRect.left - containerRect.left,
+    //     right: rightRect.right - containerRect.left,
+    //     bottom: rightRect.bottom - containerRect.top,
+    //     height: rightRect.height,
+    //     width: rightRect.width
+    // });
     
     // Check if we're on a mobile/tablet screen (991px or less)
     const isMobile = window.innerWidth <= 991;
-    console.log('Split CTA: Mobile layout?', isMobile);
+    // console.log('Split CTA: Mobile layout?', isMobile);
     
     let startX, startY, endX, endY;
     
@@ -161,7 +161,7 @@ function createConnectingLine() {
         endX = rightRect.left - containerRect.left;
         endY = rightCenterY; // Vertical center of right graphic
         
-        console.log('Split CTA: Using vertical centers -', { leftCenterY, rightCenterY });
+        // console.log('Split CTA: Using vertical centers -', { leftCenterY, rightCenterY });
     }
     
     // Create the line element
@@ -174,7 +174,7 @@ function createConnectingLine() {
     line.setAttribute('stroke-opacity', '0.75');
     line.setAttribute('stroke-width', '2');
     
-    console.log('Split CTA: Drawing line from', { x: startX, y: startY }, 'to', { x: endX, y: endY });
+    // console.log('Split CTA: Drawing line from', { x: startX, y: startY }, 'to', { x: endX, y: endY });
     
     // Add the line to the SVG
     svg.appendChild(line);
@@ -192,7 +192,7 @@ function initSplitCtaConnectingLine() {
   const splitCtaElements = document.querySelector('.split-cta');
   if (!splitCtaElements) return;
   
-  console.log('Split CTA: Initializing connecting line');
+  // console.log('Split CTA: Initializing connecting line');
   
   // Initial creation attempt
   createConnectingLine();
@@ -204,7 +204,7 @@ function initSplitCtaConnectingLine() {
   
   // Also try when window fully loads (all resources including images)
   window.addEventListener('load', () => {
-    console.log('Split CTA: Recreating on window.load');
+    // console.log('Split CTA: Recreating on window.load');
     createConnectingLine();
     setTimeout(createConnectingLine, 500);
   });
@@ -620,6 +620,15 @@ menuButton.addEventListener('click', function() {
     }
 });
 
+// Add keydown event listener to menu button
+menuButton.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        // Simulate a click on the menu button
+        this.click();
+    }
+});
+
 // Add event listeners to both close buttons
 document.querySelectorAll('.main-menu_close').forEach(button => {
     button.addEventListener('click', function() {
@@ -992,6 +1001,7 @@ function addKeyboardNavigation() {
   // Handle back button keyboard navigation - Fixed
   document.addEventListener('click', function(e) {
     if (e.target.closest('.main-menu_back')) {
+      console.log('back button clicked');
       const activeItem = document.querySelector('.main-menu_item.active');
       if (activeItem) {
         const submenuToggle = activeItem.querySelector('.main-menu_submenu-toggle');
@@ -1028,8 +1038,53 @@ function addKeyboardNavigation() {
       backButton.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
+          
+          // Store a reference to the active item before clicking
+          const activeItem = document.querySelector('.main-menu_item.active');
+          const activeItemIndex = activeItem ? 
+            Array.from(document.querySelectorAll('.main-menu_item')).indexOf(activeItem) : 0;
+          
+          // Click the back button
           this.click();
-          // Focus will be handled by the click event handler
+          
+          // Use a longer timeout to ensure DOM updates are complete
+          setTimeout(() => {
+            // Try multiple focus strategies
+            
+            // Strategy 1: Focus the previously active item
+            const allMenuItems = document.querySelectorAll('.main-menu_item');
+            const targetItem = allMenuItems[activeItemIndex] || allMenuItems[0];
+            
+            if (targetItem) {
+              const linkToFocus = targetItem.querySelector('.main-menu_link-text');
+              if (linkToFocus) {
+                console.log('Focusing on menu item:', targetItem);
+                linkToFocus.focus();
+                return;
+              }
+            }
+            
+            // Strategy 2: Focus the first menu item as fallback
+            const primaryPanel = document.querySelector('.main-menu_primary');
+            if (primaryPanel) {
+              const firstMenuItem = primaryPanel.querySelector('.main-menu_item');
+              if (firstMenuItem) {
+                const firstLink = firstMenuItem.querySelector('.main-menu_link-text');
+                if (firstLink) {
+                  console.log('Focusing on first menu item');
+                  firstLink.focus();
+                  return;
+                }
+              }
+            }
+            
+            // Strategy 3: Last resort - focus the menu button
+            const menuButton = document.querySelector('.main-menu_button');
+            if (menuButton) {
+              console.log('Focusing on menu button');
+              menuButton.focus();
+            }
+          }, 300); // Increased timeout
         } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
           e.preventDefault();
           if (submenuLinks.length > 0) {
@@ -1397,11 +1452,11 @@ function initSubScrollItemActiveClass() {
       // For debugging:
       // markers: true,
       onEnter: () => {
-        console.log('ScrollItem entered view:', item);
+        // console.log('ScrollItem entered view:', item);
         updateMainImage(item);
       },
       onEnterBack: () => {
-        console.log('ScrollItem entered view backwards:', item);
+        // console.log('ScrollItem entered view backwards:', item);
         updateMainImage(item);
       }
     });
@@ -1500,7 +1555,7 @@ function initSubScrollItemActiveClass() {
         }
       }, 1000); // Safety fallback
       
-      console.log('Crossfade transition in progress for:', subScrollItemImage.src);
+      // console.log('Crossfade transition in progress for:', subScrollItemImage.src);
     };
     
     // Handle error case - if image fails to load
@@ -1792,18 +1847,18 @@ function initMapFilters() {
 // Function to truncate text and update the "Read More" link
 function truncateText() {
   const containers = document.querySelectorAll('.js-read-more');
-  console.log('Found .js-read-more containers:', containers.length);
+  // console.log('Found .js-read-more containers:', containers.length);
 
   containers.forEach(container => {
-    console.log('Processing container:', container);
+    // console.log('Processing container:', container);
 
     // The container *is* the richtext element
     const richtextElement = container;
-    console.log('richtextElement:', richtextElement);
+    // console.log('richtextElement:', richtextElement);
 
     // Find the read-more-link within the same parent div
     const readMoreLink = container.nextElementSibling;
-    console.log('readMoreLink:', readMoreLink);
+    // console.log('readMoreLink:', readMoreLink);
 
     if (!richtextElement) {
       console.warn('richtextElement not found (should not happen):', container);
@@ -1826,19 +1881,19 @@ function truncateText() {
     }
     originalText = originalText.trim();
 
-    console.log('originalText:', originalText);
+    // console.log('originalText:', originalText);
 
     const truncatedText = originalText.length > 80 ? originalText.substring(0, 80) + '...' : originalText;
-    console.log('truncatedText:', truncatedText);
+    // console.log('truncatedText:', truncatedText);
 
     richtextElement.textContent = truncatedText;
     readMoreLink.textContent = 'Read More';
-    console.log('Text truncated and link updated for container:', container);
+    // console.log('Text truncated and link updated for container:', container);
   });
-  console.log('truncateText function complete');
+  // console.log('truncateText function complete');
 }
 
-console.log('truncateText');
+// console.log('truncateText');
 
 function initReadMore() {
   const containers = document.querySelectorAll('.js-read-more');
