@@ -1,4 +1,4 @@
-console.log('local scripts.js loaded');
+console.log('this is a local scripts.js loaded');
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -1969,6 +1969,82 @@ function initSkipToMain() {
   firstSection.setAttribute('tabindex', '-1');
 }
 
+function initStickyHeader() {
+  const header = document.querySelector('.header');
+  
+  // If header doesn't exist, exit early
+  if (!header) return;
+  
+  // Variables to track scrolling
+  let lastScrollTop = 0;
+  let scrollDelta = 5; // Minimum amount of pixels scrolled before triggering show/hide
+  let headerHeight = header.offsetHeight;
+  
+  // Add classes to set up the header for animation
+  header.classList.add('header-sticky');
+  header.classList.add('header-visible');
+  
+  // Create scroll handler function
+  function handleScroll() {
+    // Get current scroll position
+    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Don't do anything if we're at the top of the page
+    if (currentScrollTop <= 0) {
+      header.classList.remove('header-hidden');
+      header.classList.add('header-visible');
+      lastScrollTop = currentScrollTop;
+      return;
+    }
+    
+    // Check if we've scrolled more than the threshold
+    if (Math.abs(lastScrollTop - currentScrollTop) <= scrollDelta) {
+      return;
+    }
+    
+    // Scrolling down
+    if (currentScrollTop > lastScrollTop && currentScrollTop > headerHeight) {
+      // Add class to hide header
+      header.classList.remove('header-visible');
+      header.classList.add('header-hidden');
+    } 
+    // Scrolling up
+    else {
+      // Add class to show header
+      header.classList.remove('header-hidden');
+      header.classList.add('header-visible');
+    }
+    
+    // Update last scroll position
+    lastScrollTop = currentScrollTop;
+  }
+  
+  // Debounce the scroll event to improve performance
+  let isScrolling;
+  window.addEventListener('scroll', function() {
+    // Clear our timeout throughout the scroll
+    window.clearTimeout(isScrolling);
+    
+    // Process the scroll event
+    handleScroll();
+    
+    // Set a timeout to run after scrolling ends
+    isScrolling = setTimeout(function() {
+      // Update header height in case it changed (e.g., mobile menu toggle)
+      headerHeight = header.offsetHeight;
+    }, 66);
+  }, { passive: true });
+  
+  // Apply header height as padding to the body to prevent content jump
+  document.body.style.paddingTop = headerHeight + 'px';
+  
+  // Update padding on window resize
+  window.addEventListener('resize', function() {
+    headerHeight = header.offsetHeight;
+    document.body.style.paddingTop = headerHeight + 'px';
+  });
+}
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
@@ -2002,6 +2078,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Initialize map filters
   initMapFilters();
+  initStickyHeader();
 
 });
 

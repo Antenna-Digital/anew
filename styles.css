@@ -1141,3 +1141,21 @@ select:invalid,
 select option:first-child {
   color: var(--swatch--anchor-100) !important;
 }
+
+/* Sticky Header Styles */
+.header-sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.header-hidden {
+  transform: translateY(-100%);
+}
+
+.header-visible {
+  transform: translateY(0);
+}
