@@ -1161,6 +1161,6 @@ select option:first-child {
 }
 
 .split-panel_headline sup {
-  font-size: 75%;
+  font-size: 40%;
   top: -1.125em;
 }
