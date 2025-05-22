@@ -1159,3 +1159,8 @@ select option:first-child {
 .header-visible {
   transform: translateY(0);
 }
+
+.split-panel_headline sup {
+  font-size: 75%;
+  top: -1.125em;
+}
