@@ -248,10 +248,16 @@ margin: 8px 0 24px
 
   .prose ul {
     list-style-type: disc;
+    font-size: var(--size--1-25rem);
+    color: var(--swatch--forge-500);
+    font-family: var(--text-main--font-family);
   }
 
   .prose ol {
     list-style-type: decimal;
+    font-size: var(--size--1-25rem);
+    color: var(--swatch--forge-500);
+    font-family: var(--text-main--font-family);
   }
 
   .prose li {
