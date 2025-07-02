@@ -2045,6 +2045,50 @@ function initStickyHeader() {
   });
 }
 
+function initScrollLockSection() {
+  const sections = document.querySelectorAll(".scroll-lock_scroll_item_wrap");
+  if (!sections) return;
+  const bgEl = document.querySelector(".scroll-lock-section_wrap");
+
+  // Optional: link highlighting
+  const navLinks = document.querySelectorAll(".scroll-lock_sticky_list_item a");
+
+  sections.forEach((section, index) => {
+    const bgColor = section.dataset.bg || "#003A5D"; // fallback
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top center",
+      end: "bottom center",
+      onEnter: () => updateUI(index, bgColor),
+      onEnterBack: () => updateUI(index, bgColor),
+    });
+
+    // Optional: fade-in animation
+    gsap.from(section, {
+      opacity: 0,
+      y: 50,
+      duration: 0.8,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: section,
+        start: "top 80%",
+      }
+    });
+  });
+
+  function updateUI(activeIndex, color) {
+    // Update background via CSS variable or pseudo element
+    bgEl.style.setProperty("--scroll-bg", color);
+    bgEl.classList.add("is-bg-transitioning"); // optional for extra transitions
+
+    // Highlight active link
+    navLinks.forEach((link, i) => {
+      link.classList.toggle("is-active", i === activeIndex);
+    });
+  }
+}
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
@@ -2057,6 +2101,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initSplitCtaConnectingLine();
   initSubAccordions();
   initSubScrollItemActiveClass();
+  initScrollLockSection();
   
   imageSrcSetFix();
   initImageCards();
