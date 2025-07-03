@@ -2036,13 +2036,13 @@ function initStickyHeader() {
   }, { passive: true });
   
   // Apply header height as padding to the body to prevent content jump
-  document.body.style.paddingTop = headerHeight + 'px';
+  // document.body.style.paddingTop = headerHeight + 'px';
   
-  // Update padding on window resize
-  window.addEventListener('resize', function() {
-    headerHeight = header.offsetHeight;
-    document.body.style.paddingTop = headerHeight + 'px';
-  });
+  // // Update padding on window resize
+  // window.addEventListener('resize', function() {
+  //   headerHeight = header.offsetHeight;
+  //   document.body.style.paddingTop = headerHeight + 'px';
+  // });
 }
 
 function initScrollLockSection() {
@@ -2062,18 +2062,6 @@ function initScrollLockSection() {
       end: "bottom center",
       onEnter: () => updateUI(index, bgColor),
       onEnterBack: () => updateUI(index, bgColor),
-    });
-
-    // Optional: fade-in animation
-    gsap.from(section, {
-      opacity: 0,
-      y: 50,
-      duration: 0.8,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: section,
-        start: "top 80%",
-      }
     });
   });
 
