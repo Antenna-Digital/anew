@@ -1399,6 +1399,26 @@ document.addEventListener('DOMContentLoaded', function() {
       requestAnimationFrame(raf);
       console.log('Lenis initialized');
       window.lenis = lenis;
+
+      document.querySelectorAll('a.js-scroll-center').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+      
+          const targetId = this.getAttribute('data-target');
+          const targetEl = document.querySelector(targetId);
+          if (!targetEl) return;
+      
+          const rect = targetEl.getBoundingClientRect();
+          const scrollY = window.scrollY || window.pageYOffset;
+          const offset = rect.top + scrollY;
+          const centeredOffset = offset - (window.innerHeight / 2) + (targetEl.offsetHeight / 2);
+      
+          lenis.scrollTo(centeredOffset, {
+            duration: 1.5,
+            // easing: t => 1 - Math.pow(1 - t, 3),
+          });
+        });
+      });
     } else {
       console.error('Lenis not available for inline initialization');
     }
