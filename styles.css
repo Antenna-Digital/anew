@@ -1170,3 +1170,31 @@ select option:first-child {
   font-size: 40%;
   top: -1.125em;
 }
+
+.project-slider .swiper-pagination-bullet {
+  background-color: var(--swatch--glacier);
+}
+
+.project-slider .swiper-pagination-bullet-active {
+  background-color: var(--swatch--glacier);
+}
+
+.rich-on-dark p {
+  color: white;
+}
+.rich-on-dark {
+  color: white;
+}
+
+.rich-on-dark a {
+  color: white;
+}
+
+.rich-on-dark h1,
+.rich-on-dark h2,
+.rich-on-dark h3,
+.rich-on-dark h4,
+.rich-on-dark h5,
+.rich-on-dark h6 {
+  color: white;
+}

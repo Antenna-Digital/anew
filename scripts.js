@@ -2097,12 +2097,125 @@ function initScrollLockSection() {
   }
 }
 
+// Function to initialize project sliders
+function initProjectSliders() {
+  const projectSliders = document.querySelectorAll('.project_swiper');
+  
+  if (projectSliders.length === 0) return;
+  
+  projectSliders.forEach(function(swiperElement) {
+    // Find navigation elements within the same container
+    const container = swiperElement.closest('.project-slider') || swiperElement.parentElement;
+    const prevButton = container.querySelector('.project-slider_arrow.prev') || container.querySelector('.swiper-button-prev');
+    const nextButton = container.querySelector('.project-slider_arrow.next') || container.querySelector('.swiper-button-next');
+    const pagination = container.querySelector('.project-slider_pagination') || container.querySelector('.swiper-pagination');
+    
+    const swiper = new Swiper(swiperElement, {
+      // Show only one slide at a time
+      slidesPerView: 1,
+      
+      // Add space between slides
+      spaceBetween: 20,
+      
+      // Slide direction: right to left
+      direction: 'horizontal',
+      
+      // Disable loop
+      loop: false,
+      
+      // Enable navigation arrows
+      navigation: {
+        nextEl: nextButton,
+        prevEl: prevButton,
+      },
+      
+      // Enable pagination dots
+      pagination: {
+        el: pagination,
+        clickable: true,
+        type: 'bullets',
+      },
+      
+      // Enable keyboard navigation
+      keyboard: {
+        enabled: true,
+        onlyInViewport: true,
+      },
+      
+      // Enable mouse wheel navigation
+      mousewheel: {
+        invert: false,
+      },
+      
+      // Smooth transitions
+      speed: 600,
+      effect: 'slide',
+      
+      // Enable touch/swipe controls
+      allowTouchMove: true,
+      touchRatio: 1,
+      touchAngle: 45,
+      grabCursor: true,
+      
+      // Auto height
+      autoHeight: false,
+      
+      // Responsive breakpoints
+      breakpoints: {
+        768: {
+          spaceBetween: 30,
+        },
+        1024: {
+          spaceBetween: 40,
+        }
+      },
+      
+      // Event handlers
+      on: {
+        init: function() {
+          console.log('Project slider initialized');
+          
+          // Update arrow states on initialization
+          updateProjectArrowStates(this, prevButton, nextButton);
+        },
+        slideChange: function() {
+          // Update arrow states when slides change
+          updateProjectArrowStates(this, prevButton, nextButton);
+        }
+      }
+    });
+    
+    // Function to update arrow states
+    function updateProjectArrowStates(swiperInstance, prevBtn, nextBtn) {
+      if (!prevBtn || !nextBtn) return;
+      
+      // Check if we're at the beginning or end of the slider
+      if (swiperInstance.isBeginning) {
+        prevBtn.classList.add('disabled');
+        prevBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        prevBtn.classList.remove('disabled');
+        prevBtn.setAttribute('aria-disabled', 'false');
+      }
+      
+      if (swiperInstance.isEnd) {
+        nextBtn.classList.add('disabled');
+        nextBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        nextBtn.classList.remove('disabled');
+        nextBtn.setAttribute('aria-disabled', 'false');
+      }
+    }
+  });
+}
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
   // Initialize sliders
   initHeroSliders();
   initTeamSliders();
+  initProjectSliders(); // Added this line
 
   // Initialize UI components
   initHeroLine();
