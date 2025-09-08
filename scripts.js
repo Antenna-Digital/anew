@@ -1,4 +1,55 @@
-console.log('this is a local scripts.js loaded');
+console.log('sdf');
+
+// Auto-detect and convert eyebrow text in rich text fields
+function initEyebrowText() {
+  const richTextElements = document.querySelectorAll('.split-content_rich-text');
+  
+  richTextElements.forEach(richText => {
+    const firstP = richText.querySelector('p:first-child');
+    
+    if (firstP) {
+      const text = firstP.textContent.trim();
+      const nextElement = firstP.nextElementSibling;
+      
+      // Check if this looks like eyebrow text:
+      // - Short text (under 50 characters)
+      // - Followed by a heading (h1, h2, h3, etc.)
+      // - Or if it's all uppercase already
+      // - Contains no periods (likely not a sentence)
+      const isShort = text.length <= 50;
+      const isFollowedByHeading = nextElement && /^H[1-6]$/.test(nextElement.tagName);
+      const isAllCaps = text === text.toUpperCase() && text.length > 0;
+      const hasNoPeriod = !text.includes('.');
+      const isNotEmpty = text.length > 0;
+      
+      // Enhanced detection: must meet multiple criteria to avoid false positives
+      const isEyebrow = isNotEmpty && (
+        (isShort && isFollowedByHeading && hasNoPeriod) || 
+        (isAllCaps && hasNoPeriod && text.length <= 30)
+      );
+      
+      if (isEyebrow) {
+        // Create the new eyebrow structure
+        const eyebrowContainer = document.createElement('div');
+        eyebrowContainer.setAttribute('data-g-fade-in', '');
+        eyebrowContainer.className = 'u-eyebrow-container';
+        eyebrowContainer.style.opacity = '1';
+        
+        const eyebrowDiv = document.createElement('div');
+        eyebrowDiv.className = 'u-eyebrow';
+        eyebrowDiv.textContent = text;
+        
+        eyebrowContainer.appendChild(eyebrowDiv);
+        
+        // Replace the paragraph with the new structure
+        firstP.parentNode.replaceChild(eyebrowContainer, firstP);
+      }
+    }
+  });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initEyebrowText);
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -2097,6 +2148,48 @@ function initScrollLockSection() {
   }
 }
 
+function initSolutionsScrollActive() {
+  const solutionsScrollSection = document.querySelector('.section_solutions-scroll');
+  if (!solutionsScrollSection) return;
+
+  const contentContainers = solutionsScrollSection.querySelectorAll('.solutions_scroll-content-container');
+  const scrollLinks = solutionsScrollSection.querySelectorAll('.solutions_scroll-link_anchor');
+
+  if (contentContainers.length === 0 || scrollLinks.length === 0) return;
+
+  // Set the first link as active on page load
+  scrollLinks.forEach((link, index) => {
+    if (index === 0) {
+      link.classList.add('is-active');
+    } else {
+      link.classList.remove('is-active');
+    }
+  });
+
+  // Create ScrollTrigger for each content container
+  contentContainers.forEach((container, index) => {
+    ScrollTrigger.create({
+      trigger: container,
+      start: "top 60%",
+      end: "bottom 40%",
+      onEnter: () => updateActiveLink(index),
+      onEnterBack: () => updateActiveLink(index),
+    });
+  });
+
+  function updateActiveLink(activeIndex) {
+    // Remove active class from all links
+    scrollLinks.forEach(link => {
+      link.classList.remove('is-active');
+    });
+
+    // Add active class to the corresponding link
+    if (scrollLinks[activeIndex]) {
+      scrollLinks[activeIndex].classList.add('is-active');
+    }
+  }
+}
+
 // Function to initialize project sliders
 function initProjectSliders() {
   const projectSliders = document.querySelectorAll('.project_swiper');
@@ -2209,6 +2302,122 @@ function initProjectSliders() {
   });
 }
 
+// Function to initialize news sliders (3 images, move 1 per click)
+function initNewsSliders() {
+  const newsSliders = document.querySelectorAll('.news_swiper');
+  
+  if (newsSliders.length === 0) return;
+  
+  newsSliders.forEach(function(swiperElement) {
+    // Find navigation elements within the same container
+    const container = swiperElement.closest('.news-slider') || swiperElement.parentElement;
+    const prevButton = container.querySelector('.news-slider_arrow.prev') || container.querySelector('.swiper-button-prev');
+    const nextButton = container.querySelector('.news-slider_arrow.next') || container.querySelector('.swiper-button-next');
+    const pagination = container.querySelector('.news-slider_pagination') || container.querySelector('.swiper-pagination');
+    
+    const swiper = new Swiper(swiperElement, {
+      // Show three slides at a time
+      slidesPerView: 3,
+      // Move one slide per navigation click
+      slidesPerGroup: 1,
+      
+      // Add space between slides
+      spaceBetween: 20,
+      
+      // Slide direction
+      direction: 'horizontal',
+      
+      // Disable loop
+      loop: false,
+      
+      // Enable navigation arrows
+      navigation: {
+        nextEl: nextButton,
+        prevEl: prevButton,
+      },
+      
+      // Optional pagination dots
+      pagination: {
+        el: pagination,
+        clickable: true,
+        type: 'bullets',
+      },
+      
+      // Enable keyboard navigation
+      keyboard: {
+        enabled: true,
+        onlyInViewport: true,
+      },
+      
+      // Enable mouse wheel navigation
+      mousewheel: {
+        invert: false,
+      },
+      
+      // Smooth transitions
+      speed: 600,
+      effect: 'slide',
+      
+      // Enable touch/swipe controls
+      allowTouchMove: true,
+      grabCursor: true,
+      
+      // Auto height
+      autoHeight: false,
+      
+      // Responsive breakpoints
+      breakpoints: {
+        0: {
+          slidesPerView: 1,
+          spaceBetween: 10
+        },
+        480: {
+          slidesPerView: 2,
+          spaceBetween: 15
+        },
+        992: {
+          slidesPerView: 3,
+          spaceBetween: 20
+        }
+      },
+      
+      // Event handlers
+      on: {
+        init: function() {
+          // Update arrow states on initialization
+          updateNewsArrowStates(this, prevButton, nextButton);
+        },
+        slideChange: function() {
+          // Update arrow states when slides change
+          updateNewsArrowStates(this, prevButton, nextButton);
+        }
+      }
+    });
+    
+    // Function to update arrow states
+    function updateNewsArrowStates(swiperInstance, prevBtn, nextBtn) {
+      if (!prevBtn || !nextBtn) return;
+      
+      // Check if we're at the beginning or end of the slider
+      if (swiperInstance.isBeginning) {
+        prevBtn.classList.add('disabled');
+        prevBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        prevBtn.classList.remove('disabled');
+        prevBtn.setAttribute('aria-disabled', 'false');
+      }
+      
+      if (swiperInstance.isEnd) {
+        nextBtn.classList.add('disabled');
+        nextBtn.setAttribute('aria-disabled', 'true');
+      } else {
+        nextBtn.classList.remove('disabled');
+        nextBtn.setAttribute('aria-disabled', 'false');
+      }
+    }
+  });
+}
+
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
@@ -2216,6 +2425,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initHeroSliders();
   initTeamSliders();
   initProjectSliders(); // Added this line
+  initNewsSliders();
 
   // Initialize UI components
   initHeroLine();
@@ -2223,6 +2433,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initSubAccordions();
   initSubScrollItemActiveClass();
   initScrollLockSection();
+  initSolutionsScrollActive();
   
   imageSrcSetFix();
   initImageCards();
@@ -2246,7 +2457,127 @@ window.addEventListener("DOMContentLoaded", () => {
   initMapFilters();
   initStickyHeader();
 
+  initDropdownAccordions();
 });
+
+function initDropdownAccordions() {
+  const dropdownLists = document.querySelectorAll('.dropdown-list');
+  if (dropdownLists.length === 0) return;
+
+  let uniqueIdCounter = 0;
+
+  dropdownLists.forEach(list => {
+    if (list.dataset.accordionInitialized === 'true') return;
+    list.dataset.accordionInitialized = 'true';
+
+    const items = Array.from(list.querySelectorAll('.dropdown'));
+    items.forEach(item => {
+      const toggle = item.querySelector('.dropdown-toggle');
+      const content = item.querySelector('.dropdown_content');
+      const arrow = item.querySelector('.dropdown-arrow');
+      if (!toggle || !content) return;
+
+      // Ensure a unique ID relationship for a11y
+      if (!content.id) {
+        content.id = `dropdown-content-${Date.now()}-${uniqueIdCounter++}`;
+      }
+      toggle.setAttribute('aria-controls', content.id);
+      toggle.setAttribute('aria-expanded', 'false');
+      content.setAttribute('role', 'region');
+      content.setAttribute('aria-hidden', 'true');
+
+      // Initial state: closed
+      content.style.overflow = 'hidden';
+      content.style.height = '0px';
+      content.style.opacity = '0';
+      content.style.transition = 'height 300ms ease, opacity 300ms ease';
+      if (arrow) {
+        arrow.style.transition = 'transform 300ms ease';
+      }
+
+      const openItem = (target) => {
+        const targetContent = target.querySelector('.dropdown_content');
+        const targetArrow = target.querySelector('.dropdown-arrow');
+        const targetToggle = target.querySelector('.dropdown-toggle');
+        if (!targetContent || !targetToggle) return;
+        target.classList.add('open');
+        targetToggle.setAttribute('aria-expanded', 'true');
+        targetContent.setAttribute('aria-hidden', 'false');
+
+        // Animate height from current to scrollHeight
+        const startHeight = targetContent.getBoundingClientRect().height;
+        targetContent.style.height = `${startHeight}px`;
+        // Force reflow
+        // eslint-disable-next-line no-unused-expressions
+        targetContent.offsetHeight;
+        const endHeight = targetContent.scrollHeight;
+        targetContent.style.opacity = '1';
+        targetContent.style.height = `${endHeight}px`;
+        // Do NOT switch to auto at end to avoid jump
+
+        if (targetArrow) targetArrow.style.transform = 'rotate(180deg)';
+      };
+
+      const closeItem = (target) => {
+        const targetContent = target.querySelector('.dropdown_content');
+        const targetArrow = target.querySelector('.dropdown-arrow');
+        const targetToggle = target.querySelector('.dropdown-toggle');
+        if (!targetContent || !targetToggle) return;
+        target.classList.remove('open');
+        targetToggle.setAttribute('aria-expanded', 'false');
+        targetContent.setAttribute('aria-hidden', 'true');
+
+        // Start from current pixel height
+        const startHeight = targetContent.scrollHeight;
+        targetContent.style.height = `${startHeight}px`;
+        // Force reflow
+        // eslint-disable-next-line no-unused-expressions
+        targetContent.offsetHeight;
+        // Animate to 0
+        targetContent.style.height = '0px';
+        targetContent.style.opacity = '0';
+        if (targetArrow) targetArrow.style.transform = '';
+      };
+
+      toggle.addEventListener('click', () => {
+        const isOpen = item.classList.contains('open');
+        // Close others in this list
+        items.forEach(other => {
+          if (other !== item && other.classList.contains('open')) {
+            closeItem(other);
+          }
+        });
+        // Toggle current
+        if (isOpen) {
+          closeItem(item);
+        } else {
+          openItem(item);
+        }
+      });
+    });
+
+    // Resize handling: keep open items matched to content height
+    const recalcOpenHeights = () => {
+      items.forEach(item => {
+        if (item.classList.contains('open')) {
+          const content = item.querySelector('.dropdown_content');
+          if (!content) return;
+          const newHeight = content.scrollHeight;
+          content.style.height = `${newHeight}px`;
+        }
+      });
+    };
+
+    let resizeTimeout;
+    const onResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(recalcOpenHeights, 100);
+    };
+    window.addEventListener('resize', onResize);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initDropdownAccordions);
 
 
 

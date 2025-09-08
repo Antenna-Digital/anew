@@ -1179,6 +1179,17 @@ select option:first-child {
   background-color: var(--swatch--glacier);
 }
 
+.split-content_rich-text .u-eyebrow {
+    margin-top: 0;
+    font-size: var(--text-eyebrow--font-size);
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    display: block;
+  }
+.split-content_rich-text.rich-on-viridian > p {
+  color: inherit;
+}
+
 .rich-on-dark p {
   color: white;
 }
@@ -1197,4 +1208,23 @@ select option:first-child {
 .rich-on-dark h5,
 .rich-on-dark h6 {
   color: white;
+}
+.news-slider .swiper-slide { height: auto !important;}
+.news-slider .swiper-slide .w-dyn-items,
+.news-slider .swiper-slide .w-dyn-item {height: 100%;}
+
+/* Optional: make the toggle show a pointer and improve focus */
+.dropdown-list .dropdown .dropdown-toggle {
+  cursor: pointer;
+}
+
+.dropdown-list .dropdown .dropdown-toggle:focus {
+  outline: 2px solid #009C96;
+  outline-offset: 2px;
+}
+
+/* Optional: ensure arrow rotates around center cleanly */
+.dropdown-list .dropdown .dropdown-arrow {
+  transform-origin: 50% 50%;
+  display: inline-block;
 }
