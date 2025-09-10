@@ -2579,5 +2579,408 @@ function initDropdownAccordions() {
 
 document.addEventListener('DOMContentLoaded', initDropdownAccordions);
 
+// Custom map style (your gray theme)
+const customMapStyle = [
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#e9e9e9" },
+      { "lightness": 17 }
+    ]
+  },
+  {
+    "featureType": "landscape",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#f5f5f5" },
+      { "lightness": 20 }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.fill",
+    "stylers": [
+      { "color": "#ffffff" },
+      { "lightness": 17 }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      { "color": "#ffffff" },
+      { "lightness": 29 },
+      { "weight": 0.2 }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#ffffff" },
+      { "lightness": 18 }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#ffffff" },
+      { "lightness": 16 }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#f5f5f5" },
+      { "lightness": 21 }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#dedede" },
+      { "lightness": 21 }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      { "visibility": "on" },
+      { "color": "#ffffff" },
+      { "lightness": 16 }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      { "saturation": 36 },
+      { "color": "#333333" },
+      { "lightness": 40 }
+    ]
+  },
+  {
+    "elementType": "labels.icon",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#f2f2f2" },
+      { "lightness": 19 }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry.fill",
+    "stylers": [
+      { "color": "#fefefe" },
+      { "lightness": 20 }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      { "color": "#fefefe" },
+      { "lightness": 17 },
+      { "weight": 1.2 }
+    ]
+  }
+];
 
+// Global variables
+let map;
+let markerCategories = {};
+let categoryColors = {};
 
+// Utilities for dynamic categories
+function getCategorySlug(input) {
+  if (!input) return '';
+  return String(input)
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getPastelColorForSlug(slug) {
+  // Deterministic pastel color from slug
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash << 5) - hash + slug.charCodeAt(i);
+    hash |= 0; // Convert to 32bit int
+  }
+  const hue = Math.abs(hash) % 360; // 0-359
+  const saturation = 55; // softer
+  const lightness = 65; // pastel
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function createCustomMarkerIcon(color) {
+  const svg = `
+    <svg width="37" height="45" viewBox="0 0 37 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g filter="url(#filter0_d_1_12)">
+        <path d="M24.8216 12.0686C23.104 9.56263 20.1755 8 16.8513 8C13.5271 8 10.5985 9.56263 8.88096 12.0686C7.86296 13.555 7.26953 15.3653 7.26953 17.3758C7.26953 18.8003 7.62656 20.7202 9.4744 23.5596L15.9346 33.7835C16.1614 34.0884 16.5039 34.2408 16.8513 34.2408C17.1987 34.2408 17.5412 34.0884 17.768 33.7835L24.2282 23.5596C26.076 20.7202 26.433 18.8003 26.433 17.3758C26.433 15.3653 25.8396 13.555 24.8216 12.0686Z" fill="${color}"/>
+        <path d="M16.8635 23.318C13.5152 23.318 10.8086 20.6739 10.8086 17.4009C10.8086 14.128 13.5152 11.4839 16.8635 11.4839C20.2118 11.4839 22.9185 14.128 22.9185 17.4009C22.9185 20.6739 20.2118 23.318 16.8635 23.318Z" fill="white" fill-opacity="0.2"/>
+      </g>
+      <defs>
+        <filter id="filter0_d_1_12" x="-0.23" y="0.77" width="36.8931" height="43.7008" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset dx="1.5" dy="1.5"/>
+          <feGaussianBlur stdDeviation="4.365"/>
+          <feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.18 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_12"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_12" result="shape"/>
+        </filter>
+      </defs>
+    </svg>
+  `;
+  
+  return {
+    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+    scaledSize: new google.maps.Size(37, 45),
+    anchor: new google.maps.Point(18.5, 45)
+  };
+}
+
+function ensureCategory(slug) {
+  if (!slug) return;
+  if (!markerCategories[slug]) markerCategories[slug] = [];
+  if (!categoryColors[slug]) categoryColors[slug] = getPastelColorForSlug(slug);
+}
+
+function collectCategoriesFromControls() {
+  const controlsRoot = document.querySelector('.map-controls');
+  if (!controlsRoot) return;
+  const inputs = controlsRoot.querySelectorAll('input[type="checkbox"][id]');
+  inputs.forEach(input => {
+    const slug = getCategorySlug(input.id);
+    ensureCategory(slug);
+    
+    // Get color from the marker-color element
+    const categoryToggle = input.closest('.category-toggle');
+    if (categoryToggle) {
+      const markerColorEl = categoryToggle.querySelector('.marker-color');
+      if (markerColorEl) {
+        const computedStyle = window.getComputedStyle(markerColorEl);
+        const color = computedStyle.color;
+        if (color && color !== 'rgb(0, 0, 0)') {
+          categoryColors[slug] = color;
+        }
+      }
+    }
+  });
+}
+
+// Initialize the map with custom styling
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: 50.0, lng: -30.0 }, // Center between North America and Europe
+    zoom: 3,
+    styles: customMapStyle,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true
+  });
+
+  // Initialize categories from controls before loading locations
+  collectCategoriesFromControls();
+
+  // Load locations from Webflow CMS
+  loadLocations();
+
+  // Set up category toggles
+  setupCategoryToggles();
+}
+
+// Load locations from Webflow CMS data on the page
+function loadLocations() {
+  // Get all location data divs (from your Webflow Collection List)
+  const locationElements = document.querySelectorAll('.location-data');
+
+  if (locationElements.length === 0) {
+    console.warn('No location data found. Make sure your Webflow Collection List has the class "location-data" on each item.');
+    return;
+  }
+
+  locationElements.forEach(element => {
+    const location = {
+      name: element.querySelector('.location-name')?.textContent?.trim() || '',
+      address: element.querySelector('.location-address')?.textContent?.trim() || '',
+      category: element.querySelector('.location-category')?.textContent?.trim() || '',
+      description: element.querySelector('.location-description')?.textContent?.trim() || '',
+      phone: element.querySelector('.location-phone')?.textContent?.trim() || '',
+      website: element.querySelector('.location-website')?.textContent?.trim() || ''
+    };
+
+    // Only create marker if we have required data
+    if (location.name && location.address && location.category) {
+      // Ensure category exists based on slug
+      ensureCategory(getCategorySlug(location.category));
+      geocodeAndCreateMarker(location);
+    } else {
+      console.warn('Incomplete location data:', location);
+    }
+  });
+}
+
+// Geocode address and create marker
+function geocodeAndCreateMarker(location) {
+  const geocoder = new google.maps.Geocoder();
+
+  geocoder.geocode({ address: location.address }, (results, status) => {
+    if (status === 'OK') {
+      const categorySlug = getCategorySlug(location.category);
+      ensureCategory(categorySlug);
+      const marker = new google.maps.Marker({
+        position: results[0].geometry.location,
+        map: map,
+        title: location.name,
+        icon: createCustomMarkerIcon(categoryColors[categorySlug])
+      });
+
+      // Create info window with CMS data
+      const infoWindow = new google.maps.InfoWindow({
+        content: createInfoWindowContent(location)
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+      });
+
+      // Store marker in category array
+      markerCategories[categorySlug].push(marker);
+
+    } else {
+      console.error('Geocoding failed for "' + location.address + '": ' + status);
+    }
+  });
+}
+
+// Create rich info window content
+function createInfoWindowContent(location) {
+  const categorySlug = getCategorySlug(location.category);
+  return `
+    <div style="font-family: Arial, sans-serif; padding: 12px; max-width: 250px;">
+      <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px;">${location.name}</h3>
+      
+      <p style="margin: 4px 0; color: #666; font-size: 14px;">
+        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: ${categoryColors[categorySlug]}; margin-right: 6px;"></span>
+        ${location.category.charAt(0).toUpperCase() + location.category.slice(1)}
+      </p>
+      
+      <p style="margin: 4px 0; color: #666; font-size: 14px;">📍 ${location.address}</p>
+      
+      ${location.description ? `<p style="margin: 8px 0; color: #555; font-size: 14px;">${location.description}</p>` : ''}
+      
+      ${location.phone ? `<p style="margin: 4px 0; color: #666; font-size: 14px;">📞 <a href="tel:${location.phone}" style="color: #45B7D1; text-decoration: none;">${location.phone}</a></p>` : ''}
+      
+      ${location.website ? `<p style="margin: 8px 0 4px 0;"><a href="${location.website}" target="_blank" style="color: #45B7D1; text-decoration: none; font-size: 14px;">Visit Website →</a></p>` : ''}
+    </div>
+  `;
+}
+
+// Setup category toggle functionality
+function setupCategoryToggles() {
+  const controlsRoot = document.querySelector('.map-controls');
+  if (!controlsRoot) return;
+  const inputs = controlsRoot.querySelectorAll('input[type="checkbox"][id]');
+  inputs.forEach(input => {
+    const slug = getCategorySlug(input.id);
+    ensureCategory(slug);
+    input.addEventListener('change', () => {
+      toggleCategory(slug, input.checked);
+      // Optionally refit map after toggling
+      fitMapToMarkers();
+    });
+  });
+}
+
+// Toggle category visibility
+function toggleCategory(category, isVisible) {
+  const list = markerCategories[category] || [];
+  list.forEach(marker => {
+    marker.setMap(isVisible ? map : null);
+  });
+}
+
+// Auto-fit map to show all markers
+function fitMapToMarkers() {
+  const bounds = new google.maps.LatLngBounds();
+  let hasMarkers = false;
+
+  Object.values(markerCategories).forEach(categoryMarkers => {
+    categoryMarkers.forEach(marker => {
+      if (marker.getMap()) { // Only include visible markers
+        bounds.extend(marker.getPosition());
+        hasMarkers = true;
+      }
+    });
+  });
+
+  if (hasMarkers) {
+    map.fitBounds(bounds);
+    // Prevent too much zoom for single markers
+    const listener = google.maps.event.addListener(map, "idle", function () {
+      if (map.getZoom() > 16) map.setZoom(16);
+      google.maps.event.removeListener(listener);
+    });
+  }
+}
+
+// Optional: Add search functionality
+function setupSearch() {
+  const searchInput = document.getElementById('location-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      filterMarkers(searchTerm);
+    });
+  }
+}
+
+// Filter markers based on search term
+function filterMarkers(searchTerm) {
+  // Get current category states dynamically
+  Object.keys(markerCategories).forEach(category => {
+    const checkbox = document.getElementById(category);
+    const categoryVisible = checkbox ? checkbox.checked : true;
+
+    markerCategories[category].forEach(marker => {
+      const titleMatches = marker.getTitle().toLowerCase().includes(searchTerm);
+      const shouldShow = categoryVisible && (searchTerm === '' || titleMatches);
+      marker.setMap(shouldShow ? map : null);
+    });
+  });
+}
+
+// Initialize everything when page loads
+function initialize() {
+  // Wait a bit for Webflow to fully load the CMS data
+  setTimeout(() => {
+    initMap();
+    setupSearch(); // Optional search functionality
+
+    // Auto-fit map after markers are loaded (with delay for geocoding)
+    setTimeout(() => {
+      fitMapToMarkers();
+    }, 2000);
+  }, 500);
+}
+
+// Start everything when page is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}
