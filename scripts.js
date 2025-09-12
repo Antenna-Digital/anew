@@ -2585,7 +2585,7 @@ const customMapStyle = [
     "featureType": "water",
     "elementType": "geometry",
     "stylers": [
-      { "color": "#e9e9e9" },
+      { "color": "#ced4d5" },
       { "lightness": 17 }
     ]
   },
@@ -2600,7 +2600,8 @@ const customMapStyle = [
   {
     "featureType": "road.highway",
     "elementType": "geometry.fill",
-    "stylers": [
+    "stylers": [  
+      { "visibility": "off" },
       { "color": "#ffffff" },
       { "lightness": 17 }
     ]
@@ -2609,6 +2610,7 @@ const customMapStyle = [
     "featureType": "road.highway",
     "elementType": "geometry.stroke",
     "stylers": [
+      { "visibility": "off" },
       { "color": "#ffffff" },
       { "lightness": 29 },
       { "weight": 0.2 }
@@ -2618,6 +2620,7 @@ const customMapStyle = [
     "featureType": "road.arterial",
     "elementType": "geometry",
     "stylers": [
+      { "visibility": "off" },
       { "color": "#ffffff" },
       { "lightness": 18 }
     ]
@@ -2626,6 +2629,7 @@ const customMapStyle = [
     "featureType": "road.local",
     "elementType": "geometry",
     "stylers": [
+      { "visibility": "off" },
       { "color": "#ffffff" },
       { "lightness": 16 }
     ]
@@ -2634,6 +2638,7 @@ const customMapStyle = [
     "featureType": "poi",
     "elementType": "geometry",
     "stylers": [
+      { "visibility": "off" },
       { "color": "#f5f5f5" },
       { "lightness": 21 }
     ]
@@ -2642,6 +2647,7 @@ const customMapStyle = [
     "featureType": "poi.park",
     "elementType": "geometry",
     "stylers": [
+      { "visibility": "off" },
       { "color": "#dedede" },
       { "lightness": 21 }
     ]
@@ -2649,7 +2655,7 @@ const customMapStyle = [
   {
     "elementType": "labels.text.stroke",
     "stylers": [
-      { "visibility": "on" },
+      { "visibility": "off" },
       { "color": "#ffffff" },
       { "lightness": 16 }
     ]
@@ -2657,8 +2663,9 @@ const customMapStyle = [
   {
     "elementType": "labels.text.fill",
     "stylers": [
+      { "visibility": "on" },
       { "saturation": 36 },
-      { "color": "#333333" },
+      { "color": "#282c2f" },
       { "lightness": 40 }
     ]
   },
@@ -2672,6 +2679,7 @@ const customMapStyle = [
     "featureType": "transit",
     "elementType": "geometry",
     "stylers": [
+      { "visibility": "off" },
       { "color": "#f2f2f2" },
       { "lightness": 19 }
     ]
@@ -2688,7 +2696,7 @@ const customMapStyle = [
     "featureType": "administrative",
     "elementType": "geometry.stroke",
     "stylers": [
-      { "color": "#fefefe" },
+      { "color": "#ced4d5" },
       { "lightness": 17 },
       { "weight": 1.2 }
     ]
@@ -2699,6 +2707,7 @@ const customMapStyle = [
 let map;
 let markerCategories = {};
 let categoryColors = {};
+const INACTIVE_MARKER_COLOR = '#8fa3a0';
 
 // Utilities for dynamic categories
 function getCategorySlug(input) {
@@ -2849,6 +2858,16 @@ function geocodeAndCreateMarker(location) {
         icon: createCustomMarkerIcon(categoryColors[categorySlug])
       });
 
+      // Precompute icons for active/inactive states
+      marker.__activeIcon = createCustomMarkerIcon(categoryColors[categorySlug]);
+      marker.__inactiveIcon = createCustomMarkerIcon(INACTIVE_MARKER_COLOR);
+
+      // Apply initial icon based on current checkbox state if available
+      const checkbox = document.getElementById(categorySlug);
+      if (checkbox && !checkbox.checked) {
+        marker.setIcon(marker.__inactiveIcon);
+      }
+
       // Create info window with CMS data
       const infoWindow = new google.maps.InfoWindow({
         content: createInfoWindowContent(location)
@@ -2898,8 +2917,14 @@ function setupCategoryToggles() {
   inputs.forEach(input => {
     const slug = getCategorySlug(input.id);
     ensureCategory(slug);
+    // Set initial visual state
+    const toggleRoot = input.closest('.category-toggle');
+    if (toggleRoot) toggleRoot.classList.toggle('inactive', !input.checked);
+
     input.addEventListener('change', () => {
       toggleCategory(slug, input.checked);
+      // Update visual state
+      if (toggleRoot) toggleRoot.classList.toggle('inactive', !input.checked);
       // Optionally refit map after toggling
       fitMapToMarkers();
     });
@@ -2907,10 +2932,11 @@ function setupCategoryToggles() {
 }
 
 // Toggle category visibility
-function toggleCategory(category, isVisible) {
+function toggleCategory(category, isActive) {
   const list = markerCategories[category] || [];
   list.forEach(marker => {
-    marker.setMap(isVisible ? map : null);
+    // Do not change visibility here; only recolor
+    marker.setIcon(isActive ? (marker.__activeIcon || marker.getIcon()) : (marker.__inactiveIcon || marker.getIcon()));
   });
 }
 
@@ -2951,15 +2977,16 @@ function setupSearch() {
 
 // Filter markers based on search term
 function filterMarkers(searchTerm) {
-  // Get current category states dynamically
+  // Hides by text match only; recolors by category active state
   Object.keys(markerCategories).forEach(category => {
     const checkbox = document.getElementById(category);
-    const categoryVisible = checkbox ? checkbox.checked : true;
+    const isActive = checkbox ? checkbox.checked : true;
 
     markerCategories[category].forEach(marker => {
       const titleMatches = marker.getTitle().toLowerCase().includes(searchTerm);
-      const shouldShow = categoryVisible && (searchTerm === '' || titleMatches);
+      const shouldShow = (searchTerm === '' || titleMatches);
       marker.setMap(shouldShow ? map : null);
+      marker.setIcon(isActive ? (marker.__activeIcon || marker.getIcon()) : (marker.__inactiveIcon || marker.getIcon()));
     });
   });
 }
