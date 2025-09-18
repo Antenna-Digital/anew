@@ -1,5 +1,97 @@
 console.log('sdf');
 
+// Cookie utility functions
+const CookieUtils = {
+  // Set a cookie with name, value, and optional expiration days
+  set: function(name, value, days = 30) {
+    let expires = "";
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+  },
+  
+  // Get a cookie value by name
+  get: function(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  },
+  
+  // Delete a cookie by name
+  delete: function(name) {
+    document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax";
+  }
+};
+
+// Notification bar functionality with cookie persistence
+function initNotificationBar() {
+  const notificationBar = document.getElementById('website_notification');
+  const closeButton = document.getElementById('website_notification_close');
+  
+  // Check if notification bar elements exist
+  if (!notificationBar || !closeButton) {
+    console.warn('Notification bar elements not found');
+    return;
+  }
+  
+  const cookieName = 'notification_bar_dismissed';
+  const cookieValue = 'true';
+  const cookieExpireDays = 30; // Cookie expires in 30 days
+  
+  // Check if user has already dismissed the notification
+  const isDismissed = CookieUtils.get(cookieName);
+  
+  if (isDismissed === cookieValue) {
+    // Hide the notification bar if it was previously dismissed
+    notificationBar.style.display = 'none';
+    console.log('Notification bar hidden - previously dismissed');
+  } else {
+    // Show the notification bar (no JS manipulation on page load)
+    console.log('Notification bar shown - not previously dismissed');
+  }
+  
+  // Add click event listener to close button
+  closeButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Set cookie to remember dismissal
+    CookieUtils.set(cookieName, cookieValue, cookieExpireDays);
+    
+    // Hide notification bar with fade-out animation
+    notificationBar.style.transition = 'opacity 0.3s ease-in-out';
+    notificationBar.style.opacity = '0';
+    
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+      notificationBar.style.display = 'none';
+    }, 300);
+    
+    console.log('Notification bar dismissed and cookie set');
+  });
+  
+  // Add keyboard accessibility for close button
+  closeButton.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.click();
+    }
+  });
+  
+  // Ensure close button is focusable and has proper ARIA attributes
+  closeButton.setAttribute('tabindex', '0');
+  closeButton.setAttribute('role', 'button');
+  closeButton.setAttribute('aria-label', 'Close notification');
+}
+
 // Auto-detect and convert eyebrow text in rich text fields
 function initEyebrowText() {
   const richTextElements = document.querySelectorAll('.split-content_rich-text');
@@ -2421,6 +2513,9 @@ function initNewsSliders() {
 // Initialize all functions when DOM is loaded
 window.addEventListener("DOMContentLoaded", () => {
   
+  // Initialize notification bar with cookie functionality
+  initNotificationBar();
+  
   // Initialize sliders
   initHeroSliders();
   initTeamSliders();
@@ -2862,10 +2957,12 @@ function geocodeAndCreateMarker(location) {
       marker.__activeIcon = createCustomMarkerIcon(categoryColors[categorySlug]);
       marker.__inactiveIcon = createCustomMarkerIcon(INACTIVE_MARKER_COLOR);
 
-      // Apply initial icon based on current checkbox state if available
+      // Apply initial visibility and icon based on current checkbox state if available
       const checkbox = document.getElementById(categorySlug);
-      if (checkbox && !checkbox.checked) {
-        marker.setIcon(marker.__inactiveIcon);
+      if (checkbox) {
+        const isActive = !!checkbox.checked;
+        marker.setMap(isActive ? map : null);
+        marker.setIcon(isActive ? marker.__activeIcon : marker.__inactiveIcon);
       }
 
       // Create info window with CMS data
@@ -2927,6 +3024,10 @@ function setupCategoryToggles() {
       if (toggleRoot) toggleRoot.classList.toggle('inactive', !input.checked);
       // Optionally refit map after toggling
       fitMapToMarkers();
+      // Re-apply current search filter so results reflect both search and category
+      const searchInput = document.getElementById('location-search');
+      const term = searchInput ? searchInput.value.toLowerCase() : '';
+      filterMarkers(term);
     });
   });
 }
@@ -2935,7 +3036,8 @@ function setupCategoryToggles() {
 function toggleCategory(category, isActive) {
   const list = markerCategories[category] || [];
   list.forEach(marker => {
-    // Do not change visibility here; only recolor
+    // Show/hide markers by category and update icon color
+    marker.setMap(isActive ? map : null);
     marker.setIcon(isActive ? (marker.__activeIcon || marker.getIcon()) : (marker.__inactiveIcon || marker.getIcon()));
   });
 }
@@ -2984,7 +3086,7 @@ function filterMarkers(searchTerm) {
 
     markerCategories[category].forEach(marker => {
       const titleMatches = marker.getTitle().toLowerCase().includes(searchTerm);
-      const shouldShow = (searchTerm === '' || titleMatches);
+      const shouldShow = (searchTerm === '' || titleMatches) && isActive;
       marker.setMap(shouldShow ? map : null);
       marker.setIcon(isActive ? (marker.__activeIcon || marker.getIcon()) : (marker.__inactiveIcon || marker.getIcon()));
     });
