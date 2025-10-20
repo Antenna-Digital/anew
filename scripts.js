@@ -2296,11 +2296,12 @@ function initProjectSliders() {
     const pagination = container.querySelector('.project-slider_pagination') || container.querySelector('.swiper-pagination');
     
     const swiper = new Swiper(swiperElement, {
+      
       // Show only one slide at a time
       slidesPerView: 1,
       
       // Add space between slides
-      spaceBetween: 20,
+      spaceBetween: 32,
       
       // Slide direction: right to left
       direction: 'horizontal',
@@ -2348,10 +2349,13 @@ function initProjectSliders() {
       // Responsive breakpoints
       breakpoints: {
         768: {
-          spaceBetween: 30,
+          slidesPerView: 1,
         },
-        1024: {
-          spaceBetween: 40,
+        991: {
+          slidesPerView: 1.095,
+        },
+        1900: {
+          slidesPerView: 1,
         }
       },
       
