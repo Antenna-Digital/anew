@@ -727,6 +727,25 @@ function initTabContainers() {
 // Initialize tab containers
 
 
+// Translation utility function
+function getTranslation(key) {
+  // Get the HTML lang attribute
+  const lang = document.documentElement.lang || 'en';
+  
+  // Translation dictionary
+  const translations = {
+    back: {
+      en: '← Back',
+      de: '← Zurück',
+      fr: '← Retour',
+      es: '← Atrás'
+    }
+  };
+  
+  // Return the translation for the current language, fallback to English
+  return translations[key]?.[lang] || translations[key]?.en || '';
+}
+
 // Menu functionality
 function initializeMenu() {
 const menuButton = document.querySelector('.main-menu_button');
@@ -850,7 +869,7 @@ function toggleSubmenu(menuItem) {
             // Add a back button
             const backButton = document.createElement('div');
             backButton.className = 'main-menu_back';
-            backButton.innerHTML = '← Back';
+            backButton.innerHTML = getTranslation('back');
             headerContainer.appendChild(backButton);
             
             // Add a close button
