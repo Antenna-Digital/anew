@@ -2171,8 +2171,8 @@ function initStickyHeader() {
     // Get current scroll position
     const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
-    // Don't do anything if we're at the top of the page
-    if (currentScrollTop <= 0) {
+    // Reset to initial state when near the top (within 10px threshold)
+    if (currentScrollTop <= 10) {
       header.classList.remove('header-hidden');
       header.classList.add('header-visible');
       header.classList.remove('sticky-active');
