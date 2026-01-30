@@ -2175,9 +2175,13 @@ function initStickyHeader() {
     if (currentScrollTop <= 0) {
       header.classList.remove('header-hidden');
       header.classList.add('header-visible');
+      header.classList.remove('sticky-active');
       lastScrollTop = currentScrollTop;
       return;
     }
+    
+    // Add sticky-active class when scrolled away from top
+    header.classList.add('sticky-active');
     
     // Check if we've scrolled more than the threshold
     if (Math.abs(lastScrollTop - currentScrollTop) <= scrollDelta) {
