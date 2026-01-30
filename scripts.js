@@ -2180,9 +2180,6 @@ function initStickyHeader() {
       return;
     }
     
-    // Add sticky-active class when scrolled away from top
-    header.classList.add('sticky-active');
-    
     // Check if we've scrolled more than the threshold
     if (Math.abs(lastScrollTop - currentScrollTop) <= scrollDelta) {
       return;
@@ -2190,13 +2187,14 @@ function initStickyHeader() {
     
     // Scrolling down
     if (currentScrollTop > lastScrollTop && currentScrollTop > headerHeight) {
-      // Add class to hide header
+      // Hide header when scrolling down past header height (no sticky-active class)
       header.classList.remove('header-visible');
       header.classList.add('header-hidden');
     } 
     // Scrolling up
-    else {
-      // Add class to show header
+    else if (currentScrollTop < lastScrollTop) {
+      // Add sticky-active class and show header when scrolling up
+      header.classList.add('sticky-active');
       header.classList.remove('header-hidden');
       header.classList.add('header-visible');
     }
