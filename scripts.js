@@ -2349,11 +2349,6 @@ function initProjectSliders() {
         onlyInViewport: true,
       },
       
-      // Enable mouse wheel navigation
-      mousewheel: {
-        invert: false,
-      },
-      
       // Smooth transitions
       speed: 600,
       effect: 'slide',
